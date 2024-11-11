@@ -4,12 +4,12 @@
 #include <vector>
 
 class Selector {
-    std::vector<Point*> selected;
+    std::vector<Point3D*> selected;
 public:
     Selector();
-    Selector(std::vector<Point*> selected);
+    Selector(std::vector<Point3D*> selected);
     ~Selector();
-    std::vector<Point*> RectangleSelect(Point* points,int size, Vector2 begin, Vector2 end);
-    void Link(Line* lines,Point*& points, int points_size, int lines_size);
-    void ClearPointsSelection(Point* points,int size);
+    std::vector<Point3D*> RectangleSelect(Point3D* points,int size, Vector3 begin, Vector3 end, Projection projection);
+    void Link(Line3D* lines,Point3D*& points, int points_size, int lines_size,Projection projection);
+    void ClearPointsSelection(Point3D* points,int size);
 };

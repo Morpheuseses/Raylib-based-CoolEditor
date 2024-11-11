@@ -3,6 +3,10 @@
 #include <iostream>
 #include <cmath>
 
+
+// BASE METHODS
+
+
 std::vector<std::vector<float>> TransformOperation::MakeMoveMatrix2D(Vector2 vec) {
     return {
         {1,     0,     0},
@@ -85,7 +89,13 @@ TransformOperation::TransformOperation(int width, int height) {
     this->width  = width;
     this->height = height;
 }
-void TransformOperation::MirrorPoints(std::vector<Point*> points, Vector2 firstPoint, Vector2 secondPoint, bool isX) {
+
+
+// OPERATIONS IMPLEMENTATION
+
+
+void TransformOperation::MirrorPoints(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool isX) {
+    /*
     Vector2 vec = {secondPoint.x-firstPoint.x, secondPoint.y-firstPoint.y};
     Vector2 vecn = {-secondPoint.x+firstPoint.x, -secondPoint.y+firstPoint.y};
     auto operation = MakeMirrorMatrix2D(isX);
@@ -99,8 +109,10 @@ void TransformOperation::MirrorPoints(std::vector<Point*> points, Vector2 firstP
         points[i]->pos = {newPoints[i][0], newPoints[i][1]};
         std::cout << newPoints[i][0] << " "<< newPoints[i][1] << std::endl;
     }
+    */
 }
-void TransformOperation::MovePoints(std::vector<Point*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial) {
+void TransformOperation::MovePoints(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool initial) {
+    /*
     Vector2 vec = {secondPoint.x-firstPoint.x, secondPoint.y-firstPoint.y};
     auto operation = MakeMoveMatrix2D(vec);
     std::vector<std::vector<float>> newPoints;
@@ -112,13 +124,15 @@ void TransformOperation::MovePoints(std::vector<Point*> points, Vector2 firstPoi
         points[i]->pos = {newPoints[i][0], newPoints[i][1]};
         std::cout << newPoints[i][0] << " "<< newPoints[i][1] << std::endl;
     }
+    */
 }
-void TransformOperation::RotatePoints(std::vector<Point*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial) {
+void TransformOperation::RotatePoints(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool initial) {
+   /*
     Vector2 vec = {secondPoint.x-firstPoint.x, secondPoint.y-firstPoint.y};
     Vector2 vecn = {-firstPoint.x,-firstPoint.y};
     auto rotateOP = MakeRotationMatrix2D(vec);
     auto moveOP_n = MakeMoveMatrix2D(vecn);
-    auto moveOP_p = MakeMoveMatrix2D(firstPoint);
+    //auto moveOP_p = MakeMoveMatrix2D(firstPoint);
 
     std::vector<std::vector<float>> newPoints;
 
@@ -140,8 +154,10 @@ void TransformOperation::RotatePoints(std::vector<Point*> points, Vector2 firstP
         points[i]->pos = {newPoints[i][0], newPoints[i][1]};
         std::cout << newPoints[i][0] << " "<< newPoints[i][1] << " " << newPoints[i][2] <<  std::endl;
     }
+    */
 }
-void TransformOperation::ScalePoints(std::vector<Point*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, bool isGeneral) {
+void TransformOperation::ScalePoints(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool initial, bool isGeneral) {
+    /*
     Vector2 vec = {secondPoint.x-firstPoint.x, secondPoint.y-firstPoint.y};
     Vector2 vecn = {-firstPoint.x,-firstPoint.y};
 
@@ -168,9 +184,10 @@ void TransformOperation::ScalePoints(std::vector<Point*> points, Vector2 firstPo
         points[i]->pos = {newPoints[i][0] / newPoints[i][2], newPoints[i][1] / newPoints[i][2]};
         std::cout << newPoints[i][0] << " "<< newPoints[i][1] << " " << newPoints[i][2] <<  std::endl;
     }
+    */
 }
-void TransformOperation::setInitial(std::vector<Point*> initial) {
-    this->initialState = std::vector<Point>(initial.size());
+void TransformOperation::setInitial(std::vector<Point3D*> initial) {
+    this->initialState = std::vector<Point3D>(initial.size());
     for (int i = 0; i < initial.size(); i++) {
         this->initialState[i] = *initial[i];
     }

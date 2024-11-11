@@ -13,32 +13,66 @@ public:
         windowWidth = width;
     }
 public:
-    void DrawPoints(Point* points,int size) {
-        for (int i = 0; i < size; i++) {
-            if (!points[i].deleted && (points[i].pos.x != -1 && points[i].pos.y != -1))
-                if (points[i].selected == true) {
-                    DrawCircle(points[i].pos.x, points[i].pos.y,15,GREEN);
-                }
-                else if (points[i].focused == true)
-                        DrawCircle(points[i].pos.x, points[i].pos.y,15,YELLOW);
-                    else 
-                        DrawCircle(points[i].pos.x, points[i].pos.y,10,LIGHTGRAY);   
+    void DrawPoints(Point3D* points,int size, Projection projection) {
+        switch (projection) {
+            case XY:
+                for (int i = 0; i < size; i++) 
+                    if (!points[i].deleted && (points[i].pos.x != -1 && points[i].pos.y != -1))
+                        if (points[i].selected == true) {
+                            DrawCircle(points[i].pos.x, points[i].pos.y,15,GREEN);
+                        }
+                        else if (points[i].focused == true)
+                                DrawCircle(points[i].pos.x, points[i].pos.y,15,YELLOW);
+                            else 
+                                DrawCircle(points[i].pos.x, points[i].pos.y,10,LIGHTGRAY);   
+            break;
+            case YZ:
+                for (int i = 0; i < size; i++) 
+                    if (!points[i].deleted && (points[i].pos.z != -1 && points[i].pos.y != -1))
+                        if (points[i].selected == true) {
+                            DrawCircle(points[i].pos.z, points[i].pos.y,15,GREEN);
+                        }
+                        else if (points[i].focused == true)
+                                DrawCircle(points[i].pos.z, points[i].pos.y,15,YELLOW);
+                            else 
+                                DrawCircle(points[i].pos.z, points[i].pos.y,10,LIGHTGRAY);   
+            break;
         }
+        
     }
-    void DrawLines(Line* lines,int size) {
+    void DrawLines(Line3D* lines,int size, Projection projection) {
         for (int i = 0; i < size; i++) {
             if (!lines[i].deleted) {
-                if (lines[i].selected == true) {
-                   DrawLineEx(lines[i].startPoint->pos, lines[i].endPoint->pos, 3, GREEN);
+                switch (projection) {
+                    case XY:
+                        if (lines[i].selected == true) {
+                            DrawLineEx({lines[i].startPoint->pos.x, lines[i].startPoint->pos.y}, 
+                                {lines[i].endPoint->pos.x, lines[i].endPoint->pos.y}, 3, GREEN);
+                        }
+                        else if (lines[i].focused == true)
+                                DrawLineEx({lines[i].startPoint->pos.x,lines[i].startPoint->pos.y}, 
+                                    {lines[i].endPoint->pos.x,lines[i].endPoint->pos.y}, 3, YELLOW);
+                            else 
+                                DrawLineEx({lines[i].startPoint->pos.x, lines[i].startPoint->pos.y}, 
+                                    {lines[i].endPoint->pos.x, lines[i].endPoint->pos.y}, 3, LIGHTGRAY);
+                        break;
+                    case YZ:
+                        if (lines[i].selected == true) {
+                            DrawLineEx({lines[i].startPoint->pos.z, lines[i].startPoint->pos.y}, 
+                                {lines[i].endPoint->pos.z, lines[i].endPoint->pos.y}, 3, GREEN);
+                        }
+                        else if (lines[i].focused == true)
+                                DrawLineEx({lines[i].startPoint->pos.z,lines[i].startPoint->pos.y}, 
+                                    {lines[i].endPoint->pos.z,lines[i].endPoint->pos.y}, 3, YELLOW);
+                            else 
+                                DrawLineEx({lines[i].startPoint->pos.z, lines[i].startPoint->pos.y}, 
+                                    {lines[i].endPoint->pos.z, lines[i].endPoint->pos.y}, 3, LIGHTGRAY);
+                        break;
                 }
-                else if (lines[i].focused == true)
-                        DrawLineEx(lines[i].startPoint->pos, lines[i].endPoint->pos, 3, YELLOW);
-                    else 
-                        DrawLineEx(lines[i].startPoint->pos, lines[i].endPoint->pos, 3, LIGHTGRAY);
             }
         }
     }
-    void DrawText(Mode mode,Point* points,Line* lines,int points_size,int lines_size) {
+    void DrawText(Mode mode) {
         const char* text; 
         switch (mode)
         {

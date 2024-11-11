@@ -6,7 +6,7 @@
 #include <vector>
 
 class TransformOperation {
-    std::vector<Point> initialState;
+    std::vector<Point3D> initialState;
     int width;
     int height;
 private:
@@ -20,9 +20,9 @@ private:
     std::vector<std::vector<float>> MatrixMultiplyPoints(std::vector<std::vector<float>> points, std::vector<std::vector<float>> operation);
 public:
     TransformOperation(int width, int height);
-    void MirrorPoints(std::vector<Point*> points, Vector2 firstPoint, Vector2 secondPoint, bool isX);
-    void MovePoints(std::vector<Point*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial);
-    void RotatePoints(std::vector<Point*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial);
-    void ScalePoints(std::vector<Point*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, bool isGeneral);
-    void setInitial(std::vector<Point*> initial);
+    void MirrorPoints(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool isX);
+    void MovePoints(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool initial);
+    void RotatePoints(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool initial);
+    void ScalePoints(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool initial, bool isGeneral);
+    void setInitial(std::vector<Point3D*> initial);
 };

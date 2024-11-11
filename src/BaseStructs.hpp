@@ -13,6 +13,10 @@ enum Mode {
     Scale,
     Mirror
 };
+enum Projection {
+    XY,
+    YZ
+};
 struct GeometryObject {
     bool focused;
     bool deleted;
@@ -30,6 +34,24 @@ struct Line : GeometryObject {
     Point* startPoint = nullptr;
     Point* endPoint   = nullptr;
     Line() {
+        focused  = false;
+        deleted  = false;
+        selected = false;
+    }
+};
+struct Point3D : GeometryObject {
+    Vector3 pos;
+    Point3D() {
+        focused  = false;
+        deleted  = false;
+        selected = false;
+    }
+};
+
+struct Line3D : GeometryObject {
+    Point3D* startPoint = nullptr;
+    Point3D* endPoint   = nullptr;
+    Line3D() {
         focused  = false;
         deleted  = false;
         selected = false;
