@@ -44,7 +44,7 @@ void Editor::Init(const char* windowName, int targetFPS) {
 }
 void Editor::UpdateFrame() {
     BeginDrawing();
-    //UpdateSelection();
+    UpdateSelection();
     UpdatePoints();
     UpdateLines();
     UpdateMode();
@@ -164,7 +164,6 @@ void Editor::UpdateMirror() {
     */
 }
 void Editor::UpdateSelection() {
-   /*
     if (mode == Selection) {
         Vector2 start;
         Vector2 end;
@@ -192,7 +191,7 @@ void Editor::UpdateSelection() {
             }
             painter->DrawRectangleSelection(start,end);
             //std::cout << "down" << std::endl;
-            selected = selector->RectangleSelect(points,MAX_POINTS_SIZE,start,end);
+            selected = selector->RectangleSelect(points,MAX_POINTS_SIZE,start,end,projection);
             std::cout << "Were selected: " << selected.size() << std::endl;
         }
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && GetMousePosition().x < windowWidth-sidebarwidth) {
@@ -200,7 +199,6 @@ void Editor::UpdateSelection() {
             selector->ClearPointsSelection(points,MAX_POINTS_SIZE);
         }
     }
-    */
 }
 void Editor::PrintArray() {
     for (int i = 0; i < MAX_POINTS_SIZE; i++) {
@@ -230,9 +228,6 @@ void Editor::UpdatePoints() {
         if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
             selected.clear();
         }
-        std::cout << "______" << std::endl;
-        PrintArray();
-        std::cout << "______" << std::endl;
         if (selected.empty()) {
             for (int i = 0; i < MAX_POINTS_SIZE; i++) {
                 if (!points[i].deleted)
@@ -294,7 +289,8 @@ void Editor::UpdatePoints() {
                 }
                     
         
-        } }/* else {
+        } 
+    else {
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 firstPoint = GetMousePosition();
                 transformer->setInitial(selected);
@@ -302,7 +298,9 @@ void Editor::UpdatePoints() {
             if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
                 if (secondPoint.x != GetMousePosition().x || secondPoint.y != GetMousePosition().y) {
                     secondPoint = GetMousePosition();
-                    MovePoints(selected,firstPoint,secondPoint);
+                    Vector2 fp_z = {firstPoint.x,firstPoint.y};
+                    Vector2 sp_z = {secondPoint.x,secondPoint.y}; 
+                    MovePoints3D(selected,fp_z,sp_z,projection);
                     DrawLine(firstPoint.x,firstPoint.y,secondPoint.x,secondPoint.y,WHITE);
                 }
             }
@@ -311,7 +309,7 @@ void Editor::UpdatePoints() {
                 secondPoint ={-1,-1};
             }
             if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_P)){
-                CopyPaste();
+                //CopyPaste();
             }
         }
     }
@@ -324,13 +322,28 @@ void Editor::UpdatePoints() {
             return;
         }
         for (int i = 0; i < MAX_POINTS_SIZE; i++) {
-            if (CheckCollisionPointCircle(GetMousePosition(),points[i].pos, 10))
-                if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
-                    points[i].deleted = true;
-                }    
+            Vector2 pos;
+            switch (projection) {
+                case XY:
+                    pos = {points[i].pos.x, points[i].pos.y};
+                    if (CheckCollisionPointCircle(GetMousePosition(),pos, 10))
+                        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+                            points[i].deleted = true;
+                    }
+                    break;
+                case YZ:
+                    pos = {points[i].pos.z, points[i].pos.y};
+                    if (CheckCollisionPointCircle(GetMousePosition(),pos, 10))
+                        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+                            points[i].deleted = true;
+                    }
+                    break;
+            }
+                
         }   
     }
-    if (mode == Rotation && !selected.empty() && GetMousePosition().x < windowWidth-sidebarwidth) {
+    /*
+        if (mode == Rotation && !selected.empty() && GetMousePosition().x < windowWidth-sidebarwidth) {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             firstPoint = GetMousePosition();
             transformer->setInitial(selected);
@@ -433,8 +446,11 @@ void Editor::UpdateLines() {
     }
     */
 }
-void Editor::MovePoints(std::vector<Point3D*> selected, Vector3 firstPoint, Vector3 secondPoint) {
+void Editor::MovePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint) {
     transformer->MovePoints(selected,firstPoint,secondPoint,true);
+}
+void Editor::MovePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint,Projection projection) {
+    transformer->MovePoints3D(selected,firstPoint,secondPoint,true,projection);
 }
 void Editor::RotatePoints(std::vector<Point3D*> selected, Vector3 firstPoint, Vector3 secondPoint) {
     transformer->RotatePoints(selected,firstPoint,secondPoint,true);
@@ -448,12 +464,12 @@ void Editor::DrawFrame() {
     painter->DrawLines(lines,MAX_LINES_SIZE,projection);
     painter->DrawPoints(points,MAX_POINTS_SIZE,projection);
     painter->DrawText(mode);
-    //if (isPointInfo)
-    //    painter->DrawPointsInfo(points,MAX_POINTS_SIZE);
+    if (isPointInfo)
+        painter->DrawPointsInfo(points,MAX_POINTS_SIZE,projection);
     //if (isLinesInfo)
     //    painter->DrawLinesInfo(lines,MAX_LINES_SIZE);
     painter->DrawSideInterface(windowWidth*0.25);
-    //painter->DrawBottomInterface(lines,MAX_LINES_SIZE);
+    painter->DrawBottomInterface(lines,MAX_LINES_SIZE,projection);
     painter->DrawSelectedInfo(selected.size());
 }
 Point3D* Editor::CreateNewPoint2D(Vector2 pos) {

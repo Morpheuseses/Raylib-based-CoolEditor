@@ -103,17 +103,26 @@ public:
         }
         RAYLIB_H::DrawText(text, 10, windowHeight-50, 20, GRAY);
     }
-    void DrawPointsInfo(Point* points, int points_size) {
+    void DrawPointsInfo(Point3D* points, int points_size, Projection projection) {
         int number = 1;
-        for (int i = 0; i < points_size; i++) {
-            if (!points[i].deleted && (points[i].pos.x != -1 && points[i].pos.y != -1)) {
-                RAYLIB_H::DrawText(TextFormat("[ %.0f, %.0f]", points[i].pos.x, points[i].pos.y), points[i].pos.x+5, points[i].pos.y+5, 12, GRAY);
-                RAYLIB_H::DrawText(TextFormat("[%i]", number), points[i].pos.x-6, points[i].pos.y-6, 15, BLACK);
-                number++;
+        if (projection == XY)
+            for (int i = 0; i < points_size; i++) {
+                if (!points[i].deleted) {
+                    RAYLIB_H::DrawText(TextFormat("[ %.0f, %.0f, %.0f]", points[i].pos.x, points[i].pos.y, points[i].pos.z), points[i].pos.x+5, points[i].pos.y+5, 12, GRAY);
+                    RAYLIB_H::DrawText(TextFormat("[%i]", number), points[i].pos.x-6, points[i].pos.y-6, 15, BLACK);
+                    number++;
+                }
             }
-        }
+        if (projection == YZ)
+            for (int i = 0; i < points_size; i++) {
+                if (!points[i].deleted) {
+                    RAYLIB_H::DrawText(TextFormat("[ %.0f, %.0f, %.0f]", points[i].pos.x, points[i].pos.y, points[i].pos.z), points[i].pos.z+5, points[i].pos.y+5, 12, GRAY);
+                    RAYLIB_H::DrawText(TextFormat("[%i]", number), points[i].pos.z-6, points[i].pos.y-6, 15, BLACK);
+                    number++;
+                }
+            }
     }
-    void DrawLinesInfo(Line* lines, int lines_size) {
+    void DrawLinesInfo(Line* lines, int lines_size, Projection projection) {
         for (int i = 0; i < lines_size; i++) {
             if (!lines[i].deleted) {
                 int labelpointX = (lines[i].endPoint->pos.x + lines[i].startPoint->pos.x) / 2;
@@ -139,7 +148,7 @@ public:
         RAYLIB_H::DrawText(TextFormat("%.0f objects were selected",quantity),
                                 windowWidth-windowWidth*0.3, windowHeight-25,20,WHITE);
     }
-    void DrawEquation(Line* lines, int size) {
+    void DrawEquation(Line3D* lines, int size) {
         int labelpointX = 5;
         int labelpointY = windowHeight-25;
         int fontSize = 20;
@@ -158,9 +167,19 @@ public:
         //Rectangle rec = {windowWidth-width,windowHeight-30,width,windowHeight-30};
         DrawRectangle(windowWidth-width,0,width,windowHeight-30,DARKGRAY);
     }
-    void DrawBottomInterface(Line* lines,int size) {
+    void DrawProjectionStatus(Projection projection) {
+        int labelpointX = windowWidth-0.6*windowWidth;
+        int labelpointY = windowHeight-25;
+        int fontSize = 14;
+        if (projection == XY)
+            RAYLIB_H::DrawText(TextFormat("Projection: XY"), labelpointX, labelpointY, fontSize, WHITE);
+        if (projection == YZ)
+            RAYLIB_H::DrawText(TextFormat("Projection: YZ"), labelpointX, labelpointY, fontSize, WHITE);
+    }
+    void DrawBottomInterface(Line3D* lines,int size, Projection projection) {
         DrawRectangle(0,windowHeight-30,windowWidth,30,CLITERAL(Color){40,40,40,255});
         DrawCursorPos();
+        DrawProjectionStatus(projection);
         DrawEquation(lines,size);
     }
     void DrawMirrorLine(Vector2 vec, bool isX) {

@@ -11,7 +11,7 @@ Selector::Selector(std::vector<Point3D*> selected) {
 }
 Selector::~Selector() {
 }
-std::vector<Point3D*> Selector::RectangleSelect(Point3D* points,int size, Vector3 begin, Vector3 end, Projection projection) {
+std::vector<Point3D*> Selector::RectangleSelect(Point3D* points,int size, Vector2 begin, Vector2 end, Projection projection) {
     Rectangle rec = {begin.x, begin.y,end.x-begin.x,end.y-begin.y};
     for (int i = 0; i < size; i++) {
         switch (projection) {

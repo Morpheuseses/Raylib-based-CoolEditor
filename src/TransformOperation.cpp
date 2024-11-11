@@ -14,7 +14,26 @@ std::vector<std::vector<float>> TransformOperation::MakeMoveMatrix2D(Vector2 vec
         {vec.x, vec.y, 1}
     };
 }
+std::vector<std::vector<float>> TransformOperation::MakeMoveMatrix3D(Vector2 vec,Projection projection) {
+    if (projection == XY) {
+        return {
+            {1,     0,       0,    0},
+            {0,     1,       0,    0},
+            {0,     0,       1,    0},
+            {vec.x, vec.y,   0,    1}
+        };
+    }
+    if (projection == YZ) {
+        return {
+            {1,     0,       0,    0},
+            {0,     1,       0,    0},
+            {0,     0,       1,    0},
+            {0, vec.y,   vec.x,    1}
+        };
+    }
+}
 std::vector<std::vector<float>> TransformOperation::MakeMirrorMatrix2D(int isX) {
+
     if (isX) 
         return {
             {-1,     0,    0},
@@ -65,12 +84,32 @@ std::vector<std::vector<float>> TransformOperation::ConvertPointsToVector2D(std:
     }
     return res;
 }
-std::vector<std::vector<float>> TransformOperation::ConvertPointsToVector2D_WP(std::vector<Point> points) {
+std::vector<std::vector<float>> TransformOperation::ConvertPointsToVector3D(std::vector<Point3D*> points) {
+    auto res = std::vector<std::vector<float>>(points.size(),std::vector<float>(4,0));
+    for (int i = 0; i < points.size(); i++) {
+        res[i][0] = points[i]->pos.x;
+        res[i][1] = points[i]->pos.y;
+        res[i][2] = points[i]->pos.z; 
+        res[i][4] = 1; 
+    }
+    return res;
+}
+std::vector<std::vector<float>> TransformOperation::ConvertPointsToVector2D_WP(std::vector<Point3D> points) {
     auto res = std::vector<std::vector<float>>(points.size(),std::vector<float>(3,0));
     for (int i = 0; i < points.size(); i++) {
         res[i][0] = points[i].pos.x;
         res[i][1] = points[i].pos.y;
         res[i][2] = 1; 
+    }
+    return res;
+}
+std::vector<std::vector<float>> TransformOperation::ConvertPointsToVector3D_WP(std::vector<Point3D> points) {
+    auto res = std::vector<std::vector<float>>(points.size(),std::vector<float>(4,0));
+    for (int i = 0; i < points.size(); i++) {
+        res[i][0] = points[i].pos.x;
+        res[i][1] = points[i].pos.y;
+        res[i][2] = points[i].pos.z; 
+        res[i][3] = 1; 
     }
     return res;
 }
@@ -111,7 +150,7 @@ void TransformOperation::MirrorPoints(std::vector<Point3D*> points, Vector3 firs
     }
     */
 }
-void TransformOperation::MovePoints(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool initial) {
+void TransformOperation::MovePoints(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial) {
     /*
     Vector2 vec = {secondPoint.x-firstPoint.x, secondPoint.y-firstPoint.y};
     auto operation = MakeMoveMatrix2D(vec);
@@ -125,6 +164,21 @@ void TransformOperation::MovePoints(std::vector<Point3D*> points, Vector3 firstP
         std::cout << newPoints[i][0] << " "<< newPoints[i][1] << std::endl;
     }
     */
+}
+void TransformOperation::MovePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, Projection projection) {
+    Vector2 vec = {secondPoint.x-firstPoint.x, secondPoint.y-firstPoint.y};
+    auto operation = MakeMoveMatrix3D(vec, projection);
+    std::vector<std::vector<float>> newPoints;
+
+    if (!initial) 
+        newPoints = MatrixMultiplyPoints(ConvertPointsToVector3D(points),operation);
+    else
+        newPoints = MatrixMultiplyPoints(ConvertPointsToVector3D_WP(initialState),operation);
+    for (int i = 0; i  < points.size(); i++) {
+        points[i]->pos = {newPoints[i][0],newPoints[i][1], newPoints[i][2]};
+        std::cout << newPoints[i][0] << " "<< newPoints[i][1] << 
+                    " "<< newPoints[i][2] << std::endl;
+    }
 }
 void TransformOperation::RotatePoints(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool initial) {
    /*

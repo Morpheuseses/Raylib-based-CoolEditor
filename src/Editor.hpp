@@ -23,11 +23,11 @@ class Editor {
     Selector* selector;
     TransformOperation* transformer;
     int editPoint; 
-    Vector3 beginPosSelection;
-    Vector3 endPosSelection;
+    Vector2 beginPosSelection;
+    Vector2 endPosSelection;
     std::vector<Point3D*> selected;
-    Vector3 firstPoint;
-    Vector3 secondPoint;
+    Vector2 firstPoint;
+    Vector2 secondPoint;
     float sidebarwidth;
     bool isX;
     bool isGridDraw;
@@ -48,7 +48,8 @@ private:
     void UpdateLines();
     void UpdateButtons();
     void ProjectionToggle();
-    void MovePoints(std::vector<Point3D*> selected, Vector3 firstPoint, Vector3 secondPoint);
+    void MovePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint);
+    void MovePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint, Projection projection);
     void RotatePoints(std::vector<Point3D*> selected, Vector3 firstPoint, Vector3 secondPoint);
     void ScalePoints(std::vector<Point3D*> selected, Vector3 firstPoint, Vector3 secondPoint,bool isGeneral);
     void DrawFrame();
