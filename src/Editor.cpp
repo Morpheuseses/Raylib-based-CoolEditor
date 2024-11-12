@@ -342,7 +342,7 @@ void Editor::UpdatePoints() {
                 
         }   
     }
-    /*
+    
         if (mode == Rotation && !selected.empty() && GetMousePosition().x < windowWidth-sidebarwidth) {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             firstPoint = GetMousePosition();
@@ -351,7 +351,9 @@ void Editor::UpdatePoints() {
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && GetMousePosition().x < windowWidth-sidebarwidth) {
             if (secondPoint.x != GetMousePosition().x || secondPoint.y != GetMousePosition().y) {
                 secondPoint = GetMousePosition();
-                RotatePoints(selected,firstPoint,secondPoint);
+                Vector2 fp_z = {firstPoint.x,firstPoint.y};
+                Vector2 sp_z = {secondPoint.x,secondPoint.y}; 
+                RotatePoints3D(selected,fp_z,sp_z,projection);
                 DrawLine(firstPoint.x,firstPoint.y,secondPoint.x,secondPoint.y,WHITE);
             }
         }
@@ -360,6 +362,7 @@ void Editor::UpdatePoints() {
             secondPoint ={-1,-1};
         }
     }
+    /*
     if (mode == Scale && !selected.empty()) {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && GetMousePosition().x < windowWidth-sidebarwidth) {
             firstPoint = GetMousePosition();
@@ -452,8 +455,11 @@ void Editor::MovePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Vect
 void Editor::MovePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint,Projection projection) {
     transformer->MovePoints3D(selected,firstPoint,secondPoint,true,projection);
 }
-void Editor::RotatePoints(std::vector<Point3D*> selected, Vector3 firstPoint, Vector3 secondPoint) {
+void Editor::RotatePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint) {
     transformer->RotatePoints(selected,firstPoint,secondPoint,true);
+}
+void Editor::RotatePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint,Projection projection) {
+    transformer->RotatePoints3D(selected,firstPoint,secondPoint,true,projection);
 }
 void Editor::ScalePoints(std::vector<Point3D*> selected, Vector3 firstPoint, Vector3 secondPoint,bool isGeneral) {
     transformer->ScalePoints(selected,firstPoint,secondPoint,true,isGeneral);
