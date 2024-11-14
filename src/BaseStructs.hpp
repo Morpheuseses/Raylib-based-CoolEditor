@@ -17,6 +17,11 @@ enum Projection {
     XY,
     YZ
 };
+enum RotationAxis {
+    Y,
+    X,
+    Z
+};
 struct GeometryObject {
     bool focused;
     bool deleted;
@@ -47,7 +52,6 @@ struct Point3D : GeometryObject {
         selected = false;
     }
 };
-
 struct Line3D : GeometryObject {
     Point3D* startPoint = nullptr;
     Point3D* endPoint   = nullptr;

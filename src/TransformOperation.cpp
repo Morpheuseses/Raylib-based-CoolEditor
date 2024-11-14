@@ -32,27 +32,35 @@ std::vector<std::vector<float>> TransformOperation::MakeMoveMatrix3D(Vector2 vec
         };
     }
 }
-std::vector<std::vector<float>> TransformOperation::MakeRotationMatrix3D(Vector2 vec,Projection projection) {
+std::vector<std::vector<float>> TransformOperation::MakeRotationMatrix3D(Vector2 vec,Projection projection, RotationAxis rotation) {
     float pi = 3.1415;
     float cosf_phi = std::cosf(vec.x / (width*0.25) * pi);
     float sinf_phi = std::sinf(vec.x / (width*0.25) * pi);
-    float cosf_theta = std::cosf(vec.y / (width*0.25) * pi);
-    float sinf_theta = std::sinf(vec.y / (width*0.25) * pi);
-    if (projection == XY) {
-        return {
-            {cosf_phi,            0,                    -sinf_phi,              0},
-            {-sinf_theta*sinf_phi, cosf_theta,           sinf_theta*cosf_phi,   0},
-            {sinf_phi*cosf_theta, -sinf_theta,           cosf_theta*sinf_phi,   0},
-            {0,                  0,                     0,                     1}
-        };
-    }
-    if (projection == YZ) {
-        return {
-            {cosf_phi,            0,                    -sinf_phi,              0},
-            {-sinf_theta*sinf_phi, cosf_theta,           sinf_theta*cosf_phi,   0},
-            {sinf_phi*cosf_theta, -sinf_theta,           cosf_theta*sinf_phi,   0},
-            {0,                  0,                     0,                     1}
-        };
+    switch (rotation) {
+        case X:
+            return {
+                {1, 0,          0,         0},
+                {0, cosf_phi,   -sinf_phi,  0},
+                {0, sinf_phi,   cosf_phi,  0},
+                {0, 0,          0,         1}
+            };
+            break;
+        case Y:
+            return {
+                {cosf_phi, 0, sinf_phi, 0},
+                {0,        1, 0,        0},
+                {-sinf_phi,0, cosf_phi, 0},
+                {0,        0, 0,        1}
+            };
+            break;
+        case Z:
+            return {
+                {cosf_phi, -sinf_phi, 0, 0},
+                {sinf_phi, cosf_phi,  0, 0},
+                {0,         0,        1, 0},
+                {0,         0,        0, 1}
+            };
+            break;
     }
 }
 
@@ -203,25 +211,22 @@ void TransformOperation::MovePoints3D(std::vector<Point3D*> points, Vector2 firs
                     " "<< newPoints[i][2] << std::endl;
     }
 }
-void TransformOperation::RotatePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, Projection projection) {
+void TransformOperation::RotatePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, Projection projection, RotationAxis rotation) {
     Vector2 vec = {secondPoint.x-firstPoint.x, secondPoint.y-firstPoint.y};
     Vector2 vecn = {-firstPoint.x,-firstPoint.y};
-    auto operation = MakeRotationMatrix3D(vec, projection);
+    auto operation = MakeRotationMatrix3D(vec, projection,rotation);
     std::vector<std::vector<float>> newPoints;
-
 
     if (!initial) {
         newPoints = MatrixMultiplyPoints(ConvertPointsToVector3D(points),MakeMoveMatrix3D(vecn,projection)); 
         newPoints = MatrixMultiplyPoints(newPoints,operation);
         newPoints = MatrixMultiplyPoints(newPoints,MakeMoveMatrix3D(firstPoint,projection));
-
     } 
     else {
-        newPoints = MatrixMultiplyPoints(ConvertPointsToVector3D(points),MakeMoveMatrix3D(vecn,projection));
+        newPoints = MatrixMultiplyPoints(ConvertPointsToVector3D_WP(initialState),MakeMoveMatrix3D(vecn,projection));
         newPoints = MatrixMultiplyPoints(newPoints,operation);
         newPoints = MatrixMultiplyPoints(newPoints,MakeMoveMatrix3D(firstPoint,projection));
     }
-        newPoints = MatrixMultiplyPoints(ConvertPointsToVector3D_WP(initialState),operation);
     for (int i = 0; i  < points.size(); i++) {
         points[i]->pos = {newPoints[i][0],newPoints[i][1], newPoints[i][2]};
         std::cout << newPoints[i][0] << " "<< newPoints[i][1] << 

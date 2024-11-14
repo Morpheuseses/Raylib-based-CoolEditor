@@ -343,7 +343,7 @@ void Editor::UpdatePoints() {
         }   
     }
     
-        if (mode == Rotation && !selected.empty() && GetMousePosition().x < windowWidth-sidebarwidth) {
+    if (mode == Rotation && !selected.empty() && GetMousePosition().x < windowWidth-sidebarwidth) {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             firstPoint = GetMousePosition();
             transformer->setInitial(selected);
@@ -353,11 +353,31 @@ void Editor::UpdatePoints() {
                 secondPoint = GetMousePosition();
                 Vector2 fp_z = {firstPoint.x,firstPoint.y};
                 Vector2 sp_z = {secondPoint.x,secondPoint.y}; 
-                RotatePoints3D(selected,fp_z,sp_z,projection);
+                if (projection == XY)
+                    RotatePoints3D(selected,fp_z,sp_z,projection,Z);
+                if (projection == YZ)
+                    RotatePoints3D(selected,fp_z,sp_z,projection,X);
                 DrawLine(firstPoint.x,firstPoint.y,secondPoint.x,secondPoint.y,WHITE);
             }
         }
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && GetMousePosition().x < windowWidth-sidebarwidth) {
+            firstPoint = {-1,-1};
+            secondPoint ={-1,-1};
+        }
+        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+            firstPoint = GetMousePosition();
+            transformer->setInitial(selected);
+        }
+        if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && GetMousePosition().x < windowWidth-sidebarwidth) {
+            if (secondPoint.x != GetMousePosition().x || secondPoint.y != GetMousePosition().y) {
+                secondPoint = GetMousePosition();
+                Vector2 fp_z = {firstPoint.x,firstPoint.y};
+                Vector2 sp_z = {secondPoint.x,secondPoint.y}; 
+                RotatePoints3D(selected,fp_z,sp_z,projection,Y);    
+                DrawLine(firstPoint.x,firstPoint.y,secondPoint.x,secondPoint.y,WHITE);
+            }
+        }
+        if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT) && GetMousePosition().x < windowWidth-sidebarwidth) {
             firstPoint = {-1,-1};
             secondPoint ={-1,-1};
         }
@@ -458,8 +478,8 @@ void Editor::MovePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Ve
 void Editor::RotatePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint) {
     transformer->RotatePoints(selected,firstPoint,secondPoint,true);
 }
-void Editor::RotatePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint,Projection projection) {
-    transformer->RotatePoints3D(selected,firstPoint,secondPoint,true,projection);
+void Editor::RotatePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint,Projection projection, RotationAxis rotation) {
+    transformer->RotatePoints3D(selected,firstPoint,secondPoint,true,projection,rotation);
 }
 void Editor::ScalePoints(std::vector<Point3D*> selected, Vector3 firstPoint, Vector3 secondPoint,bool isGeneral) {
     transformer->ScalePoints(selected,firstPoint,secondPoint,true,isGeneral);
