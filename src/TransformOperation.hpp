@@ -19,7 +19,11 @@ private:
     std::vector<std::vector<float>> ConvertPointsToVector2D_WP(std::vector<Point3D> points);
 
     std::vector<std::vector<float>> MakeMoveMatrix3D(Vector2 vec, Projection projection);
+    std::vector<std::vector<float>> MakeMoveMatrix3D(Vector3 vec);
     std::vector<std::vector<float>> MakeRotationMatrix3D(Vector2 vec, Projection projection, RotationAxis rotation);
+    std::vector<std::vector<float>> MakeScaleMatrix3D(Vector2 vec);
+    std::vector<std::vector<float>> MakeMirrorMatrix3D(Vector2 vec, Projection projection);
+    std::vector<std::vector<float>> MakeProjectionMatrix3D(Vector2 vec, Projection projection);
     std::vector<std::vector<float>> ConvertPointsToVector3D_WP(std::vector<Point3D> points);
 
     std::vector<std::vector<float>> ConvertPointsToVector3D(std::vector<Point3D*> points);
@@ -29,8 +33,10 @@ public:
     void MirrorPoints(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool isX);
     void MovePoints(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial);
     void RotatePoints(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial);
-    void ScalePoints(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool initial, bool isGeneral);
+    void ScalePoints(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, bool isGeneral);
     void setInitial(std::vector<Point3D*> initial);
     void MovePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, Projection projection);
     void RotatePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, Projection projection, RotationAxis rotation);
+    void RotatePoints3D(std::vector<Point3D*> points, Vector3 firstPoint, Vector2 secondPoint, bool initial, Projection projection, RotationAxis rotation);
+    void ScalePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, bool isGeneral, Projection projection);
 };

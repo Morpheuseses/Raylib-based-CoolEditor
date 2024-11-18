@@ -32,10 +32,18 @@ std::vector<std::vector<float>> TransformOperation::MakeMoveMatrix3D(Vector2 vec
         };
     }
 }
+std::vector<std::vector<float>> TransformOperation::MakeMoveMatrix3D(Vector3 vec) {
+    return {
+        {1,     0,       0,        0},
+        {0,     1,       0,        0},
+        {0,     0,       1,        0},
+        {vec.x, vec.y,   vec.z,    1}
+    };
+}
 std::vector<std::vector<float>> TransformOperation::MakeRotationMatrix3D(Vector2 vec,Projection projection, RotationAxis rotation) {
     float pi = 3.1415;
-    float cosf_phi = std::cosf(vec.x / (width*0.25) * pi);
-    float sinf_phi = std::sinf(vec.x / (width*0.25) * pi);
+    float cosf_phi = std::cosf((vec.x+vec.y) / (width*0.25) * pi);
+    float sinf_phi = std::sinf((vec.x+vec.y) / (width*0.25) * pi);
     switch (rotation) {
         case X:
             return {
@@ -62,8 +70,17 @@ std::vector<std::vector<float>> TransformOperation::MakeRotationMatrix3D(Vector2
             };
             break;
     }
+    return std::vector<std::vector<float>>(0);
 }
-
+std::vector<std::vector<float>> TransformOperation::MakeScaleMatrix3D(Vector2 vec) {
+    float s = 1 / (vec.x / (width*0.1)+1);
+    return {
+        {1,   0,    0,  0},
+        {0,   1,    0,  0},
+        {0,   0,    1,  0},
+        {0,   0,    0,  s}
+    };
+}
 std::vector<std::vector<float>> TransformOperation::MakeMirrorMatrix2D(int isX) {
     if (isX) 
         return {
@@ -230,6 +247,58 @@ void TransformOperation::RotatePoints3D(std::vector<Point3D*> points, Vector2 fi
     for (int i = 0; i  < points.size(); i++) {
         points[i]->pos = {newPoints[i][0],newPoints[i][1], newPoints[i][2]};
         std::cout << newPoints[i][0] << " "<< newPoints[i][1] << 
+                    " "<< newPoints[i][2] << newPoints[i][3] << std::endl;
+    }
+}
+void TransformOperation::RotatePoints3D(std::vector<Point3D*> points, Vector3 firstPoint, Vector2 secondPoint, bool initial, Projection projection, RotationAxis rotation) {
+    Vector2 vec2D = {secondPoint.x-firstPoint.x, secondPoint.y-firstPoint.y};
+    Vector3 vecn = {-firstPoint.x,-firstPoint.y,-firstPoint.z};
+
+    auto operation = MakeRotationMatrix3D(vec2D, projection,rotation);
+    std::vector<std::vector<float>> newPoints;
+
+    if (!initial) {
+        newPoints = MatrixMultiplyPoints(ConvertPointsToVector3D(points),MakeMoveMatrix3D(vecn)); 
+        newPoints = MatrixMultiplyPoints(newPoints,operation);
+        newPoints = MatrixMultiplyPoints(newPoints,MakeMoveMatrix3D(firstPoint));
+    } 
+    else {
+        newPoints = MatrixMultiplyPoints(ConvertPointsToVector3D_WP(initialState),MakeMoveMatrix3D(vecn));
+        newPoints = MatrixMultiplyPoints(newPoints,operation);
+        newPoints = MatrixMultiplyPoints(newPoints,MakeMoveMatrix3D(firstPoint));
+    }
+    for (int i = 0; i  < points.size(); i++) {
+        points[i]->pos = {newPoints[i][0],newPoints[i][1], newPoints[i][2]};
+        //std::cout << newPoints[i][0] << " "<< newPoints[i][1] << 
+        //            " "<< newPoints[i][2] << " " << newPoints[i][3] << std::endl;
+    }
+}
+void TransformOperation::ScalePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, bool isGeneral, Projection projection) {
+    Vector2 vec = {secondPoint.x-firstPoint.x, secondPoint.y-firstPoint.y};
+    Vector2 vecn = {-firstPoint.x,-firstPoint.y};
+
+    std::vector<std::vector<float>> newPoints;
+    std::vector<std::vector<float>> scale; 
+    if (isGeneral)
+        scale = MakeScaleMatrix3D(vec);
+    else 
+        scale = MakeScaleMatrix3D(vec);
+    auto moveOP_n = MakeMoveMatrix3D(vecn,projection);
+    auto moveOP_p = MakeMoveMatrix3D(firstPoint,projection);
+
+    if (!initial) {
+        newPoints = MatrixMultiplyPoints(ConvertPointsToVector3D(points),moveOP_n);
+        newPoints = MatrixMultiplyPoints(newPoints,scale);
+        newPoints = MatrixMultiplyPoints(newPoints,moveOP_p);
+    }
+    else {
+        newPoints = MatrixMultiplyPoints(ConvertPointsToVector3D_WP(initialState),moveOP_n);
+        newPoints = MatrixMultiplyPoints(newPoints,scale);
+        newPoints = MatrixMultiplyPoints(newPoints,moveOP_p);
+    }
+    for (int i = 0; i  < points.size(); i++) {
+        points[i]->pos = {newPoints[i][0] / newPoints[i][2],newPoints[i][1] / newPoints[i][2], newPoints[i][2] / newPoints[i][2]};
+        std::cout << newPoints[i][0] << " "<< newPoints[i][1] << 
                     " "<< newPoints[i][2] << std::endl;
     }
 }
@@ -263,7 +332,7 @@ void TransformOperation::RotatePoints(std::vector<Point3D*> points, Vector2 firs
     }
     */
 }
-void TransformOperation::ScalePoints(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool initial, bool isGeneral) {
+void TransformOperation::ScalePoints(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, bool isGeneral) {
     /*
     Vector2 vec = {secondPoint.x-firstPoint.x, secondPoint.y-firstPoint.y};
     Vector2 vecn = {-firstPoint.x,-firstPoint.y};

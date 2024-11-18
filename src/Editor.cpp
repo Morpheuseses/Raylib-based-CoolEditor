@@ -309,7 +309,7 @@ void Editor::UpdatePoints() {
                 secondPoint ={-1,-1};
             }
             if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_P)){
-                //CopyPaste();
+                CopyPaste();
             }
         }
     }
@@ -370,10 +370,19 @@ void Editor::UpdatePoints() {
         }
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && GetMousePosition().x < windowWidth-sidebarwidth) {
             if (secondPoint.x != GetMousePosition().x || secondPoint.y != GetMousePosition().y) {
+                
                 secondPoint = GetMousePosition();
-                Vector2 fp_z = {firstPoint.x,firstPoint.y};
-                Vector2 sp_z = {secondPoint.x,secondPoint.y}; 
-                RotatePoints3D(selected,fp_z,sp_z,projection,Y);    
+                Vector3 point = {0,0,0};
+                for (int i = 0; i < selected.size(); i++) {
+                    point.x += selected[i]->pos.x;
+                    point.y += selected[i]->pos.y;
+                    point.z += selected[i]->pos.z;
+                }
+                point.x = point.x / selected.size();
+                point.y = point.y / selected.size();
+                point.z = point.z / selected.size();
+                std::cout << point.x << " " <<  point.y << " " << point.z << std::endl; 
+                RotatePoints3D(selected,point,secondPoint,projection,Y);    
                 DrawLine(firstPoint.x,firstPoint.y,secondPoint.x,secondPoint.y,WHITE);
             }
         }
@@ -382,7 +391,7 @@ void Editor::UpdatePoints() {
             secondPoint ={-1,-1};
         }
     }
-    /*
+    
     if (mode == Scale && !selected.empty()) {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && GetMousePosition().x < windowWidth-sidebarwidth) {
             firstPoint = GetMousePosition();
@@ -415,7 +424,7 @@ void Editor::UpdatePoints() {
             secondPoint ={-1,-1};
         }
     }
-    */
+    
 }
 void Editor::UpdateLines() {
 
@@ -457,17 +466,16 @@ void Editor::UpdateLines() {
                 
         }
     }
-    /*
     if (mode == Delete) {
         Vector2 pos = GetMousePosition();
         for (int i = 0; i < MAX_LINES_SIZE; i++) 
             if (!lines[i].deleted)
-                if (CheckCollisionPointLine(pos,lines[i].startPoint->pos, 
-                                lines[i].endPoint->pos,4)) {                        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) 
-                        lines[i].deleted = true;
+                if (CheckCollisionPointLine(pos,{lines[i].startPoint->pos.x,lines[i].startPoint->pos.y}, 
+                                {lines[i].endPoint->pos.x, lines[i].endPoint->pos.y},4)) {                        
+                        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) 
+                            lines[i].deleted = true;
                 }
     }
-    */
 }
 void Editor::MovePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint) {
     transformer->MovePoints(selected,firstPoint,secondPoint,true);
@@ -481,8 +489,11 @@ void Editor::RotatePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Ve
 void Editor::RotatePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint,Projection projection, RotationAxis rotation) {
     transformer->RotatePoints3D(selected,firstPoint,secondPoint,true,projection,rotation);
 }
-void Editor::ScalePoints(std::vector<Point3D*> selected, Vector3 firstPoint, Vector3 secondPoint,bool isGeneral) {
-    transformer->ScalePoints(selected,firstPoint,secondPoint,true,isGeneral);
+void Editor::RotatePoints3D(std::vector<Point3D*> selected, Vector3 firstPoint, Vector2 secondPoint,Projection projection, RotationAxis rotation) {
+    transformer->RotatePoints3D(selected,firstPoint,secondPoint,true,projection,rotation);
+}
+void Editor::ScalePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint,bool isGeneral) {
+    transformer->ScalePoints3D(selected,firstPoint,secondPoint,true,isGeneral,projection);
 }
 void Editor::DrawFrame() {
     if (isGridDraw)
@@ -507,9 +518,20 @@ Point3D* Editor::CreateNewPoint2D(Vector2 pos) {
             points[i].deleted  = false;
             return &points[i];
         }
-    }        return nullptr;
+    }        
+    return nullptr;
 }
 Point3D* Editor::CreateNewPoint3D(Vector3 pos) {
+    for (int i = 0; i < MAX_POINTS_SIZE; i++) {
+        if (points[i].deleted) {
+            points[i].pos      = {pos.x, pos.y, pos.z};
+            points[i].selected = false;
+            points[i].focused  = false;
+            points[i].deleted  = false;
+            return &points[i];
+        }
+    }
+    return points;
 }
 bool Editor::CheckIfLineExist(Point3D* p1, Point3D* p2) {
     for (int i = 0; i < MAX_LINES_SIZE; i++) {
@@ -539,7 +561,7 @@ Line3D* Editor::CreateLine(Point3D* p1, Point3D* p2) {
             return &lines[i];
         }
     }
-    return nullptr;
+    return lines;
 }
 void Editor::CopyPaste() {
     std::vector<Point3D*> new_selected;

@@ -51,8 +51,9 @@ private:
     void MovePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint);
     void MovePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint, Projection projection);
     void RotatePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint);
+    void RotatePoints3D(std::vector<Point3D*> selected, Vector3 firstPoint, Vector2 secondPoint,Projection projection, RotationAxis rotation);
     void RotatePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint, Projection projection,RotationAxis rotation);
-    void ScalePoints(std::vector<Point3D*> selected, Vector3 firstPoint, Vector3 secondPoint,bool isGeneral);
+    void ScalePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint,bool isGeneral);
     void DrawFrame();
     Point3D* CreateNewPoint2D(Vector2 pos);
     Point3D* CreateNewPoint3D(Vector3 pos);
