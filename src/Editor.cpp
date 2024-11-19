@@ -370,7 +370,6 @@ void Editor::UpdatePoints() {
         }
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && GetMousePosition().x < windowWidth-sidebarwidth) {
             if (secondPoint.x != GetMousePosition().x || secondPoint.y != GetMousePosition().y) {
-                
                 secondPoint = GetMousePosition();
                 Vector3 point = {0,0,0};
                 for (int i = 0; i < selected.size(); i++) {
@@ -381,7 +380,7 @@ void Editor::UpdatePoints() {
                 point.x = point.x / selected.size();
                 point.y = point.y / selected.size();
                 point.z = point.z / selected.size();
-                std::cout << point.x << " " <<  point.y << " " << point.z << std::endl; 
+                //std::cout << point.x << " " <<  point.y << " " << point.z << std::endl; 
                 RotatePoints3D(selected,point,secondPoint,projection,Y);    
                 DrawLine(firstPoint.x,firstPoint.y,secondPoint.x,secondPoint.y,WHITE);
             }
@@ -400,7 +399,16 @@ void Editor::UpdatePoints() {
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && GetMousePosition().x < windowWidth-sidebarwidth) {
             if (secondPoint.x != GetMousePosition().x || secondPoint.y != GetMousePosition().y) {
                 secondPoint = GetMousePosition();
-                ScalePoints(selected,firstPoint,secondPoint,true);
+                Vector3 point = {0,0,0};
+                for (int i = 0; i < selected.size(); i++) {
+                    point.x += selected[i]->pos.x;
+                    point.y += selected[i]->pos.y;
+                    point.z += selected[i]->pos.z;
+                }
+                point.x = point.x / selected.size();
+                point.y = point.y / selected.size();
+                point.z = point.z / selected.size();
+                ScalePoints(selected,point,secondPoint,true);
                 DrawLine(firstPoint.x,firstPoint.y,secondPoint.x,secondPoint.y,WHITE);
             }
         }
@@ -415,7 +423,16 @@ void Editor::UpdatePoints() {
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && GetMousePosition().x < windowWidth-sidebarwidth) {
             if (secondPoint.x != GetMousePosition().x || secondPoint.y != GetMousePosition().y) {
                 secondPoint = GetMousePosition();
-                ScalePoints(selected,firstPoint,secondPoint,false);
+                Vector3 point = {0,0,0};
+                for (int i = 0; i < selected.size(); i++) {
+                    point.x += selected[i]->pos.x;
+                    point.y += selected[i]->pos.y;
+                    point.z += selected[i]->pos.z;
+                }
+                point.x = point.x / selected.size();
+                point.y = point.y / selected.size();
+                point.z = point.z / selected.size();
+                ScalePoints(selected,point,secondPoint,false);
                 DrawLine(firstPoint.x,firstPoint.y,secondPoint.x,secondPoint.y,WHITE);
             }
         }
@@ -492,7 +509,7 @@ void Editor::RotatePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, 
 void Editor::RotatePoints3D(std::vector<Point3D*> selected, Vector3 firstPoint, Vector2 secondPoint,Projection projection, RotationAxis rotation) {
     transformer->RotatePoints3D(selected,firstPoint,secondPoint,true,projection,rotation);
 }
-void Editor::ScalePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint,bool isGeneral) {
+void Editor::ScalePoints(std::vector<Point3D*> selected, Vector3 firstPoint, Vector2 secondPoint,bool isGeneral) {
     transformer->ScalePoints3D(selected,firstPoint,secondPoint,true,isGeneral,projection);
 }
 void Editor::DrawFrame() {

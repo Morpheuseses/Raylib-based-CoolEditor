@@ -42,29 +42,29 @@ std::vector<std::vector<float>> TransformOperation::MakeMoveMatrix3D(Vector3 vec
 }
 std::vector<std::vector<float>> TransformOperation::MakeRotationMatrix3D(Vector2 vec,Projection projection, RotationAxis rotation) {
     float pi = 3.1415;
-    float cosf_phi = std::cosf((vec.x+vec.y) / (width*0.25) * pi);
-    float sinf_phi = std::sinf((vec.x+vec.y) / (width*0.25) * pi);
+    float cosf_phi = std::cosf((vec.x+vec.y) / (width*0.8) * pi);
+    float sinf_phi = std::sinf((vec.x+vec.y) / (width*0.8) * pi);
     switch (rotation) {
         case X:
             return {
                 {1, 0,          0,         0},
-                {0, cosf_phi,   -sinf_phi,  0},
-                {0, sinf_phi,   cosf_phi,  0},
+                {0, cosf_phi,   sinf_phi,  0},
+                {0, -sinf_phi,   cosf_phi,  0},
                 {0, 0,          0,         1}
             };
             break;
         case Y:
             return {
-                {cosf_phi, 0, sinf_phi, 0},
+                {cosf_phi, 0, -sinf_phi, 0},
                 {0,        1, 0,        0},
-                {-sinf_phi,0, cosf_phi, 0},
+                {sinf_phi,0, cosf_phi, 0},
                 {0,        0, 0,        1}
             };
             break;
         case Z:
             return {
-                {cosf_phi, -sinf_phi, 0, 0},
-                {sinf_phi, cosf_phi,  0, 0},
+                {cosf_phi, sinf_phi, 0, 0},
+                {-sinf_phi, cosf_phi,  0, 0},
                 {0,         0,        1, 0},
                 {0,         0,        0, 1}
             };
@@ -73,7 +73,7 @@ std::vector<std::vector<float>> TransformOperation::MakeRotationMatrix3D(Vector2
     return std::vector<std::vector<float>>(0);
 }
 std::vector<std::vector<float>> TransformOperation::MakeScaleMatrix3D(Vector2 vec) {
-    float s = 1 / (vec.x / (width*0.1)+1);
+    float s = 1 / ((vec.y) / (width*0.5)+1);
     return {
         {1,   0,    0,  0},
         {0,   1,    0,  0},
@@ -267,15 +267,15 @@ void TransformOperation::RotatePoints3D(std::vector<Point3D*> points, Vector3 fi
         newPoints = MatrixMultiplyPoints(newPoints,operation);
         newPoints = MatrixMultiplyPoints(newPoints,MakeMoveMatrix3D(firstPoint));
     }
-    for (int i = 0; i  < points.size(); i++) {
+    for (int i = 0; i < points.size(); i++) {
         points[i]->pos = {newPoints[i][0],newPoints[i][1], newPoints[i][2]};
-        //std::cout << newPoints[i][0] << " "<< newPoints[i][1] << 
-        //            " "<< newPoints[i][2] << " " << newPoints[i][3] << std::endl;
+        std::cout << newPoints[i][0] << " "<< newPoints[i][1] << 
+                    " "<< newPoints[i][2] << " " << newPoints[i][3] << std::endl;
     }
 }
-void TransformOperation::ScalePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, bool isGeneral, Projection projection) {
+void TransformOperation::ScalePoints3D(std::vector<Point3D*> points, Vector3 firstPoint, Vector2 secondPoint, bool initial, bool isGeneral, Projection projection) {
     Vector2 vec = {secondPoint.x-firstPoint.x, secondPoint.y-firstPoint.y};
-    Vector2 vecn = {-firstPoint.x,-firstPoint.y};
+    Vector3 vecn = {-firstPoint.x,-firstPoint.y,-firstPoint.z};
 
     std::vector<std::vector<float>> newPoints;
     std::vector<std::vector<float>> scale; 
@@ -283,8 +283,8 @@ void TransformOperation::ScalePoints3D(std::vector<Point3D*> points, Vector2 fir
         scale = MakeScaleMatrix3D(vec);
     else 
         scale = MakeScaleMatrix3D(vec);
-    auto moveOP_n = MakeMoveMatrix3D(vecn,projection);
-    auto moveOP_p = MakeMoveMatrix3D(firstPoint,projection);
+    auto moveOP_n = MakeMoveMatrix3D(vecn);
+    auto moveOP_p = MakeMoveMatrix3D(firstPoint);
 
     if (!initial) {
         newPoints = MatrixMultiplyPoints(ConvertPointsToVector3D(points),moveOP_n);
@@ -297,7 +297,7 @@ void TransformOperation::ScalePoints3D(std::vector<Point3D*> points, Vector2 fir
         newPoints = MatrixMultiplyPoints(newPoints,moveOP_p);
     }
     for (int i = 0; i  < points.size(); i++) {
-        points[i]->pos = {newPoints[i][0] / newPoints[i][2],newPoints[i][1] / newPoints[i][2], newPoints[i][2] / newPoints[i][2]};
+        points[i]->pos = {newPoints[i][0] / newPoints[i][3],newPoints[i][1] / newPoints[i][3], newPoints[i][2] / newPoints[i][3]};
         std::cout << newPoints[i][0] << " "<< newPoints[i][1] << 
                     " "<< newPoints[i][2] << std::endl;
     }
