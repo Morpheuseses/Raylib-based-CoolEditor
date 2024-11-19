@@ -13,30 +13,35 @@ public:
         windowWidth = width;
     }
 public:
-    void DrawPoints(Point3D* points,int size, Projection projection) {
+    void DrawPoints(Point3D* points, int size, Projection projection) {
         switch (projection) {
-            case XY:
-                for (int i = 0; i < size; i++) 
-                    if (!points[i].deleted && (points[i].pos.x != -1 && points[i].pos.y != -1))
-                        if (points[i].selected == true) {
-                            DrawCircle(points[i].pos.x, points[i].pos.y,15,GREEN);
+        case XY:
+                for (int i = 0; i < size; i++) {
+                        if (!points[i].deleted && (points[i].pos.x != -1 && points[i].pos.y != -1)) {
+                                if (points[i].selected == true) {
+                                        DrawCircle(points[i].pos.x, points[i].pos.y,15,GREEN);
+                                } else if (points[i].focused == true) {
+                                        DrawCircle(points[i].pos.x, points[i].pos.y,15,YELLOW);
+                                } else {
+                                        DrawCircle(points[i].pos.x, points[i].pos.y,10,LIGHTGRAY);   
+                                }
                         }
-                        else if (points[i].focused == true)
-                                DrawCircle(points[i].pos.x, points[i].pos.y,15,YELLOW);
-                            else 
-                                DrawCircle(points[i].pos.x, points[i].pos.y,10,LIGHTGRAY);   
-            break;
-            case YZ:
-                for (int i = 0; i < size; i++) 
-                    if (!points[i].deleted && (points[i].pos.z != -1 && points[i].pos.y != -1))
-                        if (points[i].selected == true) {
-                            DrawCircle(points[i].pos.z, points[i].pos.y,15,GREEN);
+                }
+                break;
+
+        case YZ:
+                for (int i = 0; i < size; i++) {
+                        if (!points[i].deleted && (points[i].pos.z != -1 && points[i].pos.y != -1)) {
+                                if (points[i].selected == true) {
+                                        DrawCircle(points[i].pos.z, points[i].pos.y,15,GREEN);
+                                } else if (points[i].focused == true) {
+                                        DrawCircle(points[i].pos.z, points[i].pos.y,15,YELLOW);
+                                } else {
+                                        DrawCircle(points[i].pos.z, points[i].pos.y,10,LIGHTGRAY);   
+                                }
                         }
-                        else if (points[i].focused == true)
-                                DrawCircle(points[i].pos.z, points[i].pos.y,15,YELLOW);
-                            else 
-                                DrawCircle(points[i].pos.z, points[i].pos.y,10,LIGHTGRAY);   
-            break;
+                }
+                break;
         }
         
     }

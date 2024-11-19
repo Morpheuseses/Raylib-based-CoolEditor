@@ -37,6 +37,6 @@ public:
     void setInitial(std::vector<Point3D*> initial);
     void MovePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, Projection projection);
     void RotatePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, Projection projection, RotationAxis rotation);
-    void RotatePoints3D(std::vector<Point3D*> points, Vector3 firstPoint, Vector2 secondPoint, bool initial, Projection projection, RotationAxis rotation);
+    void RotatePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, Vector3 center, bool initial, Projection projection, RotationAxis rotation);
     void ScalePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, bool isGeneral, Projection projection);
 };

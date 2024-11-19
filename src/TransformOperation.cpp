@@ -1,7 +1,7 @@
 #include "TransformOperation.hpp"
 #include <vector>
 #include <iostream>
-#include <cmath>
+#include <math.h>
 
 
 // BASE METHODS
@@ -42,8 +42,12 @@ std::vector<std::vector<float>> TransformOperation::MakeMoveMatrix3D(Vector3 vec
 }
 std::vector<std::vector<float>> TransformOperation::MakeRotationMatrix3D(Vector2 vec,Projection projection, RotationAxis rotation) {
     float pi = 3.1415;
-    float cosf_phi = std::cosf((vec.x+vec.y) / (width*0.25) * pi);
-    float sinf_phi = std::sinf((vec.x+vec.y) / (width*0.25) * pi);
+    /*
+    float cosf_phi = cosf((vec.x+vec.y) / (width*0.25) * pi);
+    float sinf_phi = sinf((vec.x+vec.y) / (width*0.25) * pi);
+    */
+    float cosf_phi = cosf(vec.x*DEG2RAD);
+    float sinf_phi = sinf(vec.x*DEG2RAD);
     switch (rotation) {
         case X:
             return {
@@ -97,8 +101,8 @@ std::vector<std::vector<float>> TransformOperation::MakeMirrorMatrix2D(int isX) 
 }
 std::vector<std::vector<float>> TransformOperation::MakeRotationMatrix2D(Vector2 vec) {
     float pi = 3.1415;
-    float cos = std::cosf(vec.x / (width*0.25) * pi);
-    float sin = std::sinf(vec.x / (width*0.25) * pi);
+    float cos = cosf(vec.x / (width*0.25) * pi);
+    float sin = sinf(vec.x / (width*0.25) * pi);
     std::cout << sin << " " << cos << std::endl; 
     return {
         {cos,  -sin,     0},
@@ -250,29 +254,37 @@ void TransformOperation::RotatePoints3D(std::vector<Point3D*> points, Vector2 fi
                     " "<< newPoints[i][2] << newPoints[i][3] << std::endl;
     }
 }
-void TransformOperation::RotatePoints3D(std::vector<Point3D*> points, Vector3 firstPoint, Vector2 secondPoint, bool initial, Projection projection, RotationAxis rotation) {
-    Vector2 vec2D = {secondPoint.x-firstPoint.x, secondPoint.y-firstPoint.y};
-    Vector3 vecn = {-firstPoint.x,-firstPoint.y,-firstPoint.z};
 
-    auto operation = MakeRotationMatrix3D(vec2D, projection,rotation);
+void
+TransformOperation::RotatePoints3D(std::vector<Point3D*> points,
+                                   Vector2 firstPoint, Vector2 secondPoint,
+                                   Vector3 center, bool initial,
+                                   Projection projection,
+                                   RotationAxis rotation)
+{
+    Vector2 vec2D = {(secondPoint.x-firstPoint.x), (secondPoint.y-firstPoint.y)};
+    Vector3 vecn = {-center.x, -center.y, -center.z};
+
+    std::cout << "vec2D: " << vec2D.x << ", " << vec2D.y << "\n";
+
+    auto operation = MakeRotationMatrix3D(vec2D, projection, rotation);
     std::vector<std::vector<float>> newPoints;
 
     if (!initial) {
-        newPoints = MatrixMultiplyPoints(ConvertPointsToVector3D(points),MakeMoveMatrix3D(vecn)); 
-        newPoints = MatrixMultiplyPoints(newPoints,operation);
-        newPoints = MatrixMultiplyPoints(newPoints,MakeMoveMatrix3D(firstPoint));
-    } 
-    else {
-        newPoints = MatrixMultiplyPoints(ConvertPointsToVector3D_WP(initialState),MakeMoveMatrix3D(vecn));
-        newPoints = MatrixMultiplyPoints(newPoints,operation);
-        newPoints = MatrixMultiplyPoints(newPoints,MakeMoveMatrix3D(firstPoint));
+        newPoints = MatrixMultiplyPoints(ConvertPointsToVector3D(points), MakeMoveMatrix3D(vecn)); 
+        newPoints = MatrixMultiplyPoints(newPoints, operation);
+        newPoints = MatrixMultiplyPoints(newPoints, MakeMoveMatrix3D(center));
+    } else {
+        newPoints = MatrixMultiplyPoints(ConvertPointsToVector3D_WP(initialState), MakeMoveMatrix3D(vecn));
+        newPoints = MatrixMultiplyPoints(newPoints, operation);
+        newPoints = MatrixMultiplyPoints(newPoints, MakeMoveMatrix3D(center));
     }
+
     for (int i = 0; i  < points.size(); i++) {
         points[i]->pos = {newPoints[i][0],newPoints[i][1], newPoints[i][2]};
-        //std::cout << newPoints[i][0] << " "<< newPoints[i][1] << 
-        //            " "<< newPoints[i][2] << " " << newPoints[i][3] << std::endl;
     }
 }
+
 void TransformOperation::ScalePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, bool isGeneral, Projection projection) {
     Vector2 vec = {secondPoint.x-firstPoint.x, secondPoint.y-firstPoint.y};
     Vector2 vecn = {-firstPoint.x,-firstPoint.y};
