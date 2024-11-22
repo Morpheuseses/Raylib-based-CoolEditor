@@ -3,11 +3,12 @@
  Editor::Editor(int height, int width, int configFlags) {
     mode = Create;
     points = new Point3D[MAX_POINTS_SIZE];
+    projectedPoints = new Point3D[MAX_POINTS_SIZE];
     lines = new Line3D[MAX_LINES_SIZE];
     windowHeight = height;
     windowWidth = width;
     sidebarwidth = width * 0.25;
-    isX = false;
+    isVertical = false;
     isGridDraw = true;
     isPointInfo = true;
     isLinesInfo = true;
@@ -17,6 +18,9 @@
     }
     for (int i = 0; i < MAX_LINES_SIZE; i++) {
         lines[i].deleted = true;
+    }
+    for (int i = 0; i < MAX_LINES_SIZE; i++) {
+        projectedPoints[i].deleted = true;
     }
     editPoint = -1;
     Setup(configFlags);
@@ -45,12 +49,13 @@ void Editor::Init(const char* windowName, int targetFPS) {
 void Editor::UpdateFrame() {
     BeginDrawing();
     UpdateSelection();
+    UpdateProjection();
     UpdatePoints();
     UpdateLines();
     UpdateMode();
     ClearBackground(BLACK);
     DrawFPS(10,10);
-    //UpdateMirror();
+    UpdateMirror();
     DrawFrame();
     UpdateButtons();
     EndDrawing();
@@ -80,6 +85,28 @@ void Editor::UpdateMode() {
     }
     if (IsKeyPressed(KEY_M)) {
         mode = Mirror;
+    }
+}
+void Editor::UpdateProjection() {
+    if (IsKeyPressed(KEY_V)) {
+        transformer->SetWorldCoords(points, MAX_POINTS_SIZE);
+        Vector3 zero = {1600/2,900/2,0};
+        Vector3 center = {0,0,0};
+        for (int i = 0; i < selected.size(); i++) {
+            center.x += selected[i]->pos.x;
+            center.y += selected[i]->pos.y;
+            center.z += selected[i]->pos.z;
+        }
+        center.x = center.x / selected.size();
+        center.y = center.y / selected.size();
+        center.z = center.z / selected.size();
+        transformer->ProjectPoints3D(selected, zero, {1,1,(float)windowWidth}, false, projection);
+        /*
+        auto worldCoords = transformer->GetWorldCoords();
+        for (int i = 0; i < MAX_POINTS_SIZE; i++) {
+            points[i] = worldCoords[i];
+        }
+        */
     }
 }
 void Editor::ProjectionToggle() {
@@ -121,7 +148,7 @@ void Editor::UpdateButtons() {
     }
     Rectangle MirrorModeRectToggleXY = {windowWidth-90, buttonSize*7+5*8, 85, buttonSize};
     if (GuiButton(MirrorModeRectToggleXY, "XY toggle")) {
-        isX = isX ? false : true; 
+        isVertical = isVertical ? false : true; 
     }
     Rectangle GridToggleRect = {windowWidth-sidebarwidth+5,buttonSize*8+5*9,sidebarwidth,buttonSize};
     if (GuiButton(GridToggleRect, "Grid visibility")) {
@@ -141,27 +168,29 @@ void Editor::UpdateButtons() {
     }
 }
 void Editor::UpdateMirror() {
-   /* 
     if (mode == Mirror) {
-        auto pos = GetMousePosition();
+        Vector3 pos;
+        if (projection == YZ) 
+            pos = {0,GetMousePosition().y,GetMousePosition().x};
+        else
+            pos = {GetMousePosition().x,GetMousePosition().y,0};
         if (IsKeyPressed(KEY_X))
-            if (!isX)
-                isX = true;
+            if (!isVertical)
+                isVertical = true;
             else 
-                isX = false;
-        painter->DrawMirrorLine(pos,isX);
+                isVertical = false;
+        painter->DrawMirrorLine(GetMousePosition(),isVertical);
         if (!selected.empty()) {
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && GetMousePosition().x < windowWidth-sidebarwidth) {
-                Vector2 zero = {0,0};
-                if (isX)
-                    transformer->MirrorPoints(selected,zero,pos,true);
+                Vector3 zero = {0,0,0};
+                if (isVertical)
+                    transformer->MirrorPoints3D(selected,zero,pos,true,projection);
                 else
-                    transformer->MirrorPoints(selected,zero,pos,false);
+                    transformer->MirrorPoints3D(selected,zero,pos,false,projection);
             }
             
         }
     }
-    */
 }
 void Editor::UpdateSelection() {
     if (mode == Selection) {
@@ -371,17 +400,16 @@ void Editor::UpdatePoints() {
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && GetMousePosition().x < windowWidth-sidebarwidth) {
             if (secondPoint.x != GetMousePosition().x || secondPoint.y != GetMousePosition().y) {
                 secondPoint = GetMousePosition();
-                Vector3 point = {0,0,0};
+                Vector3 center = {0,0,0};
                 for (int i = 0; i < selected.size(); i++) {
-                    point.x += selected[i]->pos.x;
-                    point.y += selected[i]->pos.y;
-                    point.z += selected[i]->pos.z;
+                    center.x += selected[i]->pos.x;
+                    center.y += selected[i]->pos.y;
+                    center.z += selected[i]->pos.z;
                 }
-                point.x = point.x / selected.size();
-                point.y = point.y / selected.size();
-                point.z = point.z / selected.size();
-                //std::cout << point.x << " " <<  point.y << " " << point.z << std::endl; 
-                RotatePoints3D(selected,point,secondPoint,projection,Y);    
+                center.x = center.x / selected.size();
+                center.y = center.y / selected.size();
+                center.z = center.z / selected.size();
+                RotatePoints3D(selected,firstPoint,secondPoint,center,projection,Y);    
                 DrawLine(firstPoint.x,firstPoint.y,secondPoint.x,secondPoint.y,WHITE);
             }
         }
@@ -503,11 +531,11 @@ void Editor::MovePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Ve
 void Editor::RotatePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint) {
     transformer->RotatePoints(selected,firstPoint,secondPoint,true);
 }
-void Editor::RotatePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint,Projection projection, RotationAxis rotation) {
+void Editor::RotatePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint, Projection projection, RotationAxis rotation) {
     transformer->RotatePoints3D(selected,firstPoint,secondPoint,true,projection,rotation);
 }
-void Editor::RotatePoints3D(std::vector<Point3D*> selected, Vector3 firstPoint, Vector2 secondPoint,Projection projection, RotationAxis rotation) {
-    transformer->RotatePoints3D(selected,firstPoint,secondPoint,true,projection,rotation);
+void Editor::RotatePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint, Vector3 center, Projection projection, RotationAxis rotation) {
+    transformer->RotatePoints3D(selected,firstPoint,secondPoint,center,true,projection,rotation);
 }
 void Editor::ScalePoints(std::vector<Point3D*> selected, Vector3 firstPoint, Vector2 secondPoint,bool isGeneral) {
     transformer->ScalePoints3D(selected,firstPoint,secondPoint,true,isGeneral,projection);
@@ -520,8 +548,8 @@ void Editor::DrawFrame() {
     painter->DrawText(mode);
     if (isPointInfo)
         painter->DrawPointsInfo(points,MAX_POINTS_SIZE,projection);
-    //if (isLinesInfo)
-    //    painter->DrawLinesInfo(lines,MAX_LINES_SIZE);
+    if (isLinesInfo)
+        painter->DrawLinesInfo(lines,MAX_LINES_SIZE,projection);
     painter->DrawSideInterface(windowWidth*0.25);
     painter->DrawBottomInterface(lines,MAX_LINES_SIZE,projection);
     painter->DrawSelectedInfo(selected.size());

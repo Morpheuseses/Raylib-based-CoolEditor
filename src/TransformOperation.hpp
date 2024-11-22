@@ -7,11 +7,12 @@
 
 class TransformOperation {
     std::vector<Point3D> initialState;
+    std::vector<Point3D> worldPoints;
     int width;
     int height;
 private:
     std::vector<std::vector<float>> MakeMoveMatrix2D(Vector2 vec);
-    std::vector<std::vector<float>> MakeMirrorMatrix2D(int isX);
+    std::vector<std::vector<float>> MakeMirrorMatrix2D(bool isX);
     std::vector<std::vector<float>> MakeRotationMatrix2D(Vector2 vec);
     std::vector<std::vector<float>> MakeGeneralScaleMatrix2D(Vector2 vec);
     std::vector<std::vector<float>> MakeScaleMatrix2D(Vector2 vec);
@@ -20,23 +21,31 @@ private:
 
     std::vector<std::vector<float>> MakeMoveMatrix3D(Vector2 vec, Projection projection);
     std::vector<std::vector<float>> MakeMoveMatrix3D(Vector3 vec);
+    std::vector<std::vector<float>> MakeMirrorMatrix3D(bool isVertical, Projection projection);
     std::vector<std::vector<float>> MakeRotationMatrix3D(Vector2 vec, Projection projection, RotationAxis rotation);
     std::vector<std::vector<float>> MakeScaleMatrix3D(Vector2 vec);
+    std::vector<std::vector<float>> MakeScaleMatrix3D(Vector2 vec,Projection projection);
     std::vector<std::vector<float>> MakeMirrorMatrix3D(Vector2 vec, Projection projection);
-    std::vector<std::vector<float>> MakeProjectionMatrix3D(Vector2 vec, Projection projection);
-    std::vector<std::vector<float>> ConvertPointsToVector3D_WP(std::vector<Point3D> points);
 
+    std::vector<std::vector<float>> MakeProjectionMatrix3D(Vector3 vec, Projection projection);
+
+    std::vector<std::vector<float>> ConvertPointsToVector3D_WP(std::vector<Point3D> points);
     std::vector<std::vector<float>> ConvertPointsToVector3D(std::vector<Point3D*> points);
     std::vector<std::vector<float>> MatrixMultiplyPoints(std::vector<std::vector<float>> points, std::vector<std::vector<float>> operation);
 public:
     TransformOperation(int width, int height);
-    void MirrorPoints(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool isX);
+    void MirrorPoints2D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool isX);
     void MovePoints(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial);
     void RotatePoints(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial);
     void ScalePoints(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, bool isGeneral);
     void setInitial(std::vector<Point3D*> initial);
     void MovePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, Projection projection);
     void RotatePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, Projection projection, RotationAxis rotation);
-    void RotatePoints3D(std::vector<Point3D*> points, Vector3 firstPoint, Vector2 secondPoint, bool initial, Projection projection, RotationAxis rotation);
+    void RotatePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, Vector3 center, bool initial, Projection projection, RotationAxis rotation);
     void ScalePoints3D(std::vector<Point3D*> points, Vector3 firstPoint, Vector2 secondPoint, bool initial, bool isGeneral, Projection projection);
+    void MirrorPoints3D(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool isVertical,Projection projection);
+
+    std::vector<Point3D> GetWorldCoords();
+    void SetWorldCoords(Point3D* points, int size);
+    void ProjectPoints3D(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool initial, Projection projection);
 };

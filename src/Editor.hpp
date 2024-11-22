@@ -13,6 +13,7 @@
 
 class Editor {
     Mode mode;
+    Point3D* projectedPoints;
     Point3D* points;
     Line3D* lines;
     const int MAX_LINES_SIZE  = 600;
@@ -29,7 +30,7 @@ class Editor {
     Vector2 firstPoint;
     Vector2 secondPoint;
     float sidebarwidth;
-    bool isX;
+    bool isVertical;
     bool isGridDraw;
     bool isPointInfo;
     bool isLinesInfo;
@@ -42,6 +43,7 @@ public:
     void UpdateFrame();
 private:
     void UpdateMode();
+    void UpdateProjection();
     void UpdateMirror();
     void UpdateSelection();
     void UpdatePoints();
@@ -51,9 +53,9 @@ private:
     void MovePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint);
     void MovePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint, Projection projection);
     void RotatePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint);
-    void RotatePoints3D(std::vector<Point3D*> selected, Vector3 firstPoint, Vector2 secondPoint,Projection projection, RotationAxis rotation);
-    void RotatePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint, Projection projection,RotationAxis rotation);
-    void ScalePoints(std::vector<Point3D*> selected, Vector3 firstPoint, Vector2 secondPoint,bool isGeneral);
+    void RotatePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint, Projection projection, RotationAxis rotation);
+    void RotatePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint, Vector3 center, Projection projection, RotationAxis rotation);
+    void ScalePoints(std::vector<Point3D*> selected, Vector3 firstPoint, Vector2 secondPoint, bool isGeneral);
     void DrawFrame();
     Point3D* CreateNewPoint2D(Vector2 pos);
     Point3D* CreateNewPoint3D(Vector3 pos);
@@ -62,4 +64,6 @@ private:
     Line3D* CreateLine(Point3D* p1, Point3D* p2);
     void CopyPaste();
     void PrintArray();
+    void SaveProject();
+    void LoadProject();
 };

@@ -122,15 +122,30 @@ public:
                 }
             }
     }
-    void DrawLinesInfo(Line* lines, int lines_size, Projection projection) {
+    void DrawLinesInfo(Line3D* lines, int lines_size, Projection projection) {
         for (int i = 0; i < lines_size; i++) {
             if (!lines[i].deleted) {
-                int labelpointX = (lines[i].endPoint->pos.x + lines[i].startPoint->pos.x) / 2;
-                int labelpointY = (lines[i].endPoint->pos.y + lines[i].startPoint->pos.y) / 2;
-                float A = lines[i].startPoint->pos.y - lines[i].endPoint->pos.y;  
-                float B = lines[i].endPoint->pos.x - lines[i].startPoint->pos.x;
-                float C = lines[i].startPoint->pos.x * lines[i].endPoint->pos.y - lines[i].endPoint->pos.x * lines[i].startPoint->pos.y;
-                RAYLIB_H::DrawText(TextFormat("(%.0f, %.0f, %.0f)", A, B, C), labelpointX+5, labelpointY+5, 12, GRAY);
+                int labelpointX, labelpointY;
+                float A, B, C;
+                switch (projection) {
+                    case XY:
+                        labelpointX = (lines[i].endPoint->pos.x + lines[i].startPoint->pos.x) / 2;
+                        labelpointY = (lines[i].endPoint->pos.y + lines[i].startPoint->pos.y) / 2;
+                        A = lines[i].startPoint->pos.y - lines[i].endPoint->pos.y;  
+                        B = lines[i].endPoint->pos.x - lines[i].startPoint->pos.x;
+                        C = lines[i].startPoint->pos.x * lines[i].endPoint->pos.y - lines[i].endPoint->pos.x * lines[i].startPoint->pos.y;
+                        RAYLIB_H::DrawText(TextFormat("(%.0f, %.0f, %.0f)", A, B, C), labelpointX+5, labelpointY+5, 12, GRAY);
+                        break;
+                    case YZ:
+                        labelpointX = (lines[i].endPoint->pos.z + lines[i].startPoint->pos.z) / 2;
+                        labelpointY = (lines[i].endPoint->pos.y + lines[i].startPoint->pos.y) / 2;
+                        A = lines[i].startPoint->pos.y - lines[i].endPoint->pos.y;  
+                        B = lines[i].endPoint->pos.z - lines[i].startPoint->pos.z;
+                        C = lines[i].startPoint->pos.z * lines[i].endPoint->pos.y - lines[i].endPoint->pos.z * lines[i].startPoint->pos.y;
+                        RAYLIB_H::DrawText(TextFormat("(%.0f, %.0f, %.0f)", A, B, C), labelpointX+5, labelpointY+5, 12, GRAY);
+                        break;
+                }
+                
             }
         }
     }
