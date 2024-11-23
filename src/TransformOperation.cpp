@@ -385,9 +385,9 @@ void TransformOperation::SetWorldCoords(Point3D* points, int size) {
         worldPoints.push_back(points[i]);
     }
 }
-void TransformOperation::ProjectPoints3D(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool initial, Projection projection) {
+std::vector<Point3D*> TransformOperation::ProjectPoints3D(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool initial, Projection projection) {
     Vector3 vec = {secondPoint.x-firstPoint.x, secondPoint.y-firstPoint.y, secondPoint.z-firstPoint.z};
-
+    std::vector<Point3D*> res;
     std::vector<std::vector<float>> newPoints;
     auto operation = MakeProjectionMatrix3D(vec, projection);
     if (!initial) {
@@ -397,9 +397,11 @@ void TransformOperation::ProjectPoints3D(std::vector<Point3D*> points, Vector3 f
         newPoints = MatrixMultiplyPoints(ConvertPointsToVector3D_WP(initialState),operation);
     }
     for (int i = 0; i < points.size(); i++) {
-        points[i]->pos = {newPoints[i][0] / newPoints[i][3], newPoints[i][1] / newPoints[i][3],newPoints[i][2] / newPoints[i][3]};
+        res.push_back(new Point3D);
+        res[i]->pos = {newPoints[i][0] / newPoints[i][3], newPoints[i][1] / newPoints[i][3],newPoints[i][2] / newPoints[i][3]};
         std::cout << newPoints[i][0] / newPoints[i][3]<< " "<< newPoints[i][1] / newPoints[i][3]<< " " << newPoints[i][2] / newPoints[i][3]<<  std::endl;
     }
+    return res;
 }
 void TransformOperation::RotatePoints(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial) {
    /*

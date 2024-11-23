@@ -100,6 +100,9 @@ public:
             case Mirror:
                 text = "Mirror mode";
                 break;
+            case Perspective:
+                text = "Perspective toggled";
+                break;
         }
         RAYLIB_H::DrawText(text, 10, windowHeight-50, 20, GRAY);
     }

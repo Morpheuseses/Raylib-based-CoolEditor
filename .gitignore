@@ -1,3 +1,4 @@
 .vscode/
 src/*.o
 editor
+src/raygui.h

@@ -47,5 +47,5 @@ public:
 
     std::vector<Point3D> GetWorldCoords();
     void SetWorldCoords(Point3D* points, int size);
-    void ProjectPoints3D(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool initial, Projection projection);
+    std::vector<Point3D*> ProjectPoints3D(std::vector<Point3D*> points, Vector3 firstPoint, Vector3 secondPoint, bool initial, Projection projection);
 };

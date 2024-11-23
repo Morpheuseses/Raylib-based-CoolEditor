@@ -16,6 +16,7 @@ class Editor {
     Point3D* projectedPoints;
     Point3D* points;
     Line3D* lines;
+    Line3D* projectedLines;
     const int MAX_LINES_SIZE  = 600;
     const int MAX_POINTS_SIZE = 300;
     int windowHeight;
@@ -35,6 +36,7 @@ class Editor {
     bool isPointInfo;
     bool isLinesInfo;
     Projection projection;
+    bool isPerspective;
 public: 
     Editor(int height, int width, int configFlags);
     ~Editor();
@@ -63,6 +65,7 @@ private:
     std::vector<Point3D*> GetPointAllLines(Point3D*& point);
     Line3D* CreateLine(Point3D* p1, Point3D* p2);
     void CopyPaste();
+    Line3D CopyLinesProjectedPoints(Line3D*);
     void PrintArray();
     void SaveProject();
     void LoadProject();

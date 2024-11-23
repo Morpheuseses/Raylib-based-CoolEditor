@@ -5,11 +5,13 @@
     points = new Point3D[MAX_POINTS_SIZE];
     projectedPoints = new Point3D[MAX_POINTS_SIZE];
     lines = new Line3D[MAX_LINES_SIZE];
+    projectedLines = new Line3D[MAX_LINES_SIZE];
     windowHeight = height;
     windowWidth = width;
     sidebarwidth = width * 0.25;
     isVertical = false;
     isGridDraw = true;
+    isPerspective = false;
     isPointInfo = true;
     isLinesInfo = true;
     projection = XY;
@@ -19,8 +21,11 @@
     for (int i = 0; i < MAX_LINES_SIZE; i++) {
         lines[i].deleted = true;
     }
-    for (int i = 0; i < MAX_LINES_SIZE; i++) {
+    for (int i = 0; i < MAX_POINTS_SIZE; i++) {
         projectedPoints[i].deleted = true;
+    }
+    for (int i = 0; i < MAX_LINES_SIZE; i++) {
+        projectedLines[i].deleted = true;
     }
     editPoint = -1;
     Setup(configFlags);
@@ -86,11 +91,37 @@ void Editor::UpdateMode() {
     if (IsKeyPressed(KEY_M)) {
         mode = Mirror;
     }
+    if (IsKeyPressed(KEY_V)) {
+        mode = Perspective;
+        isPerspective = isPerspective ? false : true;
+    }
+}
+Line3D Editor::CopyLinesProjectedPoints(Line3D* linePoint) {
+    Line3D newLine;
+    newLine.deleted = false;
+    int startPoint_i = -1;
+    int endPoint_i = -1;
+    for (int i = 0; i < MAX_POINTS_SIZE; i++) {
+        if (linePoint->startPoint == &points[i]) {
+            startPoint_i = i;
+        }
+        else if (linePoint->endPoint == &points[i]) {
+            endPoint_i = i;
+        }
+    }
+    newLine.startPoint = &projectedPoints[startPoint_i];
+    newLine.endPoint   = &projectedPoints[endPoint_i]; 
+    for (int i = 0; i < MAX_LINES_SIZE; i++) {
+        if (projectedLines->deleted) {
+            projectedLines[i] = newLine;
+        }
+    }
+    return newLine;
 }
 void Editor::UpdateProjection() {
-    if (IsKeyPressed(KEY_V)) {
-        transformer->SetWorldCoords(points, MAX_POINTS_SIZE);
-        Vector3 zero = {1600/2,900/2,0};
+    if (isPerspective) {
+        //transformer->SetWorldCoords(points, MAX_POINTS_SIZE);
+        Vector3 zero = {0,0,0};
         Vector3 center = {0,0,0};
         for (int i = 0; i < selected.size(); i++) {
             center.x += selected[i]->pos.x;
@@ -100,13 +131,17 @@ void Editor::UpdateProjection() {
         center.x = center.x / selected.size();
         center.y = center.y / selected.size();
         center.z = center.z / selected.size();
-        transformer->ProjectPoints3D(selected, zero, {1,1,(float)windowWidth}, false, projection);
-        /*
-        auto worldCoords = transformer->GetWorldCoords();
+        std::vector<Point3D*> toProjected;
         for (int i = 0; i < MAX_POINTS_SIZE; i++) {
-            points[i] = worldCoords[i];
+            toProjected.push_back(&points[i]);
         }
-        */
+        toProjected = transformer->ProjectPoints3D(toProjected, zero, {1,1,(float)windowWidth}, false, projection);
+        for (int i = 0; i < MAX_POINTS_SIZE; i++) {
+            projectedPoints[i] = *toProjected[i];
+        }
+        for (int i = 0; i < MAX_LINES_SIZE; i++) {
+            CopyLinesProjectedPoints(&lines[i]);
+        }
     }
 }
 void Editor::ProjectionToggle() {
@@ -543,8 +578,14 @@ void Editor::ScalePoints(std::vector<Point3D*> selected, Vector3 firstPoint, Vec
 void Editor::DrawFrame() {
     if (isGridDraw)
         painter->DrawGrid(40);
-    painter->DrawLines(lines,MAX_LINES_SIZE,projection);
-    painter->DrawPoints(points,MAX_POINTS_SIZE,projection);
+    if (!isPerspective) {
+        painter->DrawLines(lines,MAX_LINES_SIZE,projection);
+        painter->DrawPoints(points,MAX_POINTS_SIZE,projection);
+    }
+    else {
+        painter->DrawLines(projectedLines,MAX_LINES_SIZE,projection);
+        painter->DrawPoints(projectedPoints,MAX_POINTS_SIZE,projection);
+    }
     painter->DrawText(mode);
     if (isPointInfo)
         painter->DrawPointsInfo(points,MAX_POINTS_SIZE,projection);
