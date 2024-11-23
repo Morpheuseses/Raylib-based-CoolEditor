@@ -162,6 +162,11 @@ public:
         RAYLIB_H::DrawText(TextFormat("X: %.0f, Y: %.0f", pos.x, pos.y), 
                                 windowWidth-windowWidth*0.1, windowHeight-25, 20, WHITE);
     }
+    void DrawCursorPosYZ() {
+        Vector2 pos = GetMousePosition();
+        RAYLIB_H::DrawText(TextFormat("Z: %.0f, Y: %.0f", pos.x, pos.y), 
+                                windowWidth-windowWidth*0.1, windowHeight-25, 20, WHITE);
+    }
     void DrawSelectedInfo(float quantity) {
         RAYLIB_H::DrawText(TextFormat("%.0f objects were selected",quantity),
                                 windowWidth-windowWidth*0.3, windowHeight-25,20,WHITE);
@@ -196,7 +201,10 @@ public:
     }
     void DrawBottomInterface(Line3D* lines,int size, Projection projection) {
         DrawRectangle(0,windowHeight-30,windowWidth,30,CLITERAL(Color){40,40,40,255});
-        DrawCursorPos();
+        if (projection ==XY)        
+            DrawCursorPos();
+        else
+            DrawCursorPosYZ();
         DrawProjectionStatus(projection);
         DrawEquation(lines,size);
     }

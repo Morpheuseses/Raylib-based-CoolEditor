@@ -7,6 +7,7 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
+#include <string>
 #include "TransformOperation.hpp"
 #include "Painter.hpp"
 #include "Selector.hpp"
@@ -57,7 +58,7 @@ private:
     void RotatePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint);
     void RotatePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint, Projection projection, RotationAxis rotation);
     void RotatePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint, Vector3 center, Projection projection, RotationAxis rotation);
-    void ScalePoints(std::vector<Point3D*> selected, Vector3 firstPoint, Vector2 secondPoint, bool isGeneral);
+    void ScalePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint,Vector3 center, bool isGeneral);
     void DrawFrame();
     Point3D* CreateNewPoint2D(Vector2 pos);
     Point3D* CreateNewPoint3D(Vector3 pos);
@@ -67,6 +68,6 @@ private:
     void CopyPaste();
     Line3D CopyLinesProjectedPoints(Line3D*);
     void PrintArray();
-    void SaveProject();
-    void LoadProject();
+    void SaveProject(std::string);
+    void LoadProject(std::string);
 };

@@ -112,8 +112,9 @@ Line3D Editor::CopyLinesProjectedPoints(Line3D* linePoint) {
     newLine.startPoint = &projectedPoints[startPoint_i];
     newLine.endPoint   = &projectedPoints[endPoint_i]; 
     for (int i = 0; i < MAX_LINES_SIZE; i++) {
-        if (projectedLines->deleted) {
+        if (projectedLines[i].deleted) {
             projectedLines[i] = newLine;
+            break;
         }
     }
     return newLine;
@@ -135,7 +136,10 @@ void Editor::UpdateProjection() {
         for (int i = 0; i < MAX_POINTS_SIZE; i++) {
             toProjected.push_back(&points[i]);
         }
-        toProjected = transformer->ProjectPoints3D(toProjected, zero, {1,1,(float)windowWidth}, false, projection);
+        if (projection == YZ)
+            toProjected = transformer->ProjectPoints3D(toProjected, zero, {(float)windowHeight,1,1}, false, projection);
+        else if (projection == XY)
+            toProjected = transformer->ProjectPoints3D(toProjected, zero, {1,1,(float)windowHeight}, false, projection);
         for (int i = 0; i < MAX_POINTS_SIZE; i++) {
             projectedPoints[i] = *toProjected[i];
         }
@@ -471,7 +475,7 @@ void Editor::UpdatePoints() {
                 point.x = point.x / selected.size();
                 point.y = point.y / selected.size();
                 point.z = point.z / selected.size();
-                ScalePoints(selected,point,secondPoint,true);
+                ScalePoints(selected,firstPoint,secondPoint,point,true);
                 DrawLine(firstPoint.x,firstPoint.y,secondPoint.x,secondPoint.y,WHITE);
             }
         }
@@ -495,7 +499,7 @@ void Editor::UpdatePoints() {
                 point.x = point.x / selected.size();
                 point.y = point.y / selected.size();
                 point.z = point.z / selected.size();
-                ScalePoints(selected,point,secondPoint,false);
+                ScalePoints(selected,firstPoint,secondPoint,point,false);
                 DrawLine(firstPoint.x,firstPoint.y,secondPoint.x,secondPoint.y,WHITE);
             }
         }
@@ -572,8 +576,8 @@ void Editor::RotatePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, 
 void Editor::RotatePoints3D(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint, Vector3 center, Projection projection, RotationAxis rotation) {
     transformer->RotatePoints3D(selected,firstPoint,secondPoint,center,true,projection,rotation);
 }
-void Editor::ScalePoints(std::vector<Point3D*> selected, Vector3 firstPoint, Vector2 secondPoint,bool isGeneral) {
-    transformer->ScalePoints3D(selected,firstPoint,secondPoint,true,isGeneral,projection);
+void Editor::ScalePoints(std::vector<Point3D*> selected, Vector2 firstPoint, Vector2 secondPoint, Vector3 center, bool isGeneral) {
+    transformer->ScalePoints3D(selected,firstPoint,secondPoint,center,true,isGeneral,projection);
 }
 void Editor::DrawFrame() {
     if (isGridDraw)
@@ -581,16 +585,20 @@ void Editor::DrawFrame() {
     if (!isPerspective) {
         painter->DrawLines(lines,MAX_LINES_SIZE,projection);
         painter->DrawPoints(points,MAX_POINTS_SIZE,projection);
+        if (isPointInfo)
+            painter->DrawPointsInfo(points,MAX_POINTS_SIZE,projection);
+        if (isLinesInfo)
+            painter->DrawLinesInfo(lines,MAX_LINES_SIZE,projection);
     }
     else {
         painter->DrawLines(projectedLines,MAX_LINES_SIZE,projection);
         painter->DrawPoints(projectedPoints,MAX_POINTS_SIZE,projection);
+        if (isPointInfo)
+            painter->DrawPointsInfo(projectedPoints,MAX_POINTS_SIZE,projection);
+        if (isLinesInfo)
+            painter->DrawLinesInfo(projectedLines,MAX_LINES_SIZE,projection);
     }
     painter->DrawText(mode);
-    if (isPointInfo)
-        painter->DrawPointsInfo(points,MAX_POINTS_SIZE,projection);
-    if (isLinesInfo)
-        painter->DrawLinesInfo(lines,MAX_LINES_SIZE,projection);
     painter->DrawSideInterface(windowWidth*0.25);
     painter->DrawBottomInterface(lines,MAX_LINES_SIZE,projection);
     painter->DrawSelectedInfo(selected.size());
@@ -668,5 +676,5 @@ void Editor::CopyPaste() {
                 }
             }
         }
-        selected = new_selected;
-    }
+    selected = new_selected;
+}

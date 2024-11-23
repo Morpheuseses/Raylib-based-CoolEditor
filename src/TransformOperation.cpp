@@ -72,8 +72,8 @@ std::vector<std::vector<float>> TransformOperation::MakeRotationMatrix3D(Vector2
     }
     return std::vector<std::vector<float>>(0);
 }
-std::vector<std::vector<float>> TransformOperation::MakeScaleMatrix3D(Vector2 vec) {
-    float s = 1 / ((vec.y) / (width*0.5)+1);
+std::vector<std::vector<float>> TransformOperation::MakeGeneralScaleMatrix3D(Vector2 vec) {
+    float s = 1 / ((vec.x) / (width*0.5)+1);
     return {
         {1,   0,    0,  0},
         {0,   1,    0,  0},
@@ -81,20 +81,38 @@ std::vector<std::vector<float>> TransformOperation::MakeScaleMatrix3D(Vector2 ve
         {0,   0,    0,  s}
     };
 }
+std::vector<std::vector<float>> TransformOperation::MakeScaleMatrix3D(Vector2 vec, Projection projection) {
+    float sx = 1 / ((vec.x) / (width*0.5)+ 1);
+    float sy = 1 / ((vec.y) / (height*0.5)+1);
+    if (projection == XY)
+        return {
+            {sx,  0,    0,  0},
+            {0,   sy,   0,  0},
+            {0,   0,    1,  0},
+            {0,   0,    0,  1}
+        };
+    else 
+        return {
+            {1,   0,    0,  0},
+            {0,   sy,   0,  0},
+            {0,   0,   sx,  0},
+            {0,   0,    0,  1}
+        };
+}
 std::vector<std::vector<float>> TransformOperation::MakeProjectionMatrix3D(Vector3 vec, Projection projection) {
     switch (projection) {
         case YZ:
             return {
-                {0, 0, 0, 1/vec.x},
-                {0, 1, 0, 1/vec.y},
-                {0, 0, 1, 1/vec.z},
+                {0, 0, 0, -1/vec.x},
+                {0, 1, 0, 1},
+                {0, 0, 1, 1},
                 {0, 0, 0, 1}
             };
         case XY:
             return {
                 {1, 0, 0, 0},
                 {0, 1, 0, 0},
-                {0, 0, 0, 1/vec.z},
+                {0, 0, 0, -1/vec.z},
                 {0, 0, 0, 1}
             };
     }     
@@ -345,18 +363,18 @@ void TransformOperation::RotatePoints3D(std::vector<Point3D*> points, Vector2 fi
                     " "<< newPoints[i][2] << " " << newPoints[i][3] << std::endl;
     }
 }
-void TransformOperation::ScalePoints3D(std::vector<Point3D*> points, Vector3 firstPoint, Vector2 secondPoint, bool initial, bool isGeneral, Projection projection) {
-    Vector2 vec = {secondPoint.x-firstPoint.x, secondPoint.y-firstPoint.y};
-    Vector3 vecn = {-firstPoint.x,-firstPoint.y,-firstPoint.z};
+void TransformOperation::ScalePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, Vector3 center, bool initial, bool isGeneral, Projection projection) {
+    Vector2 vec2D = {secondPoint.x-firstPoint.x, secondPoint.y-firstPoint.y};
+    Vector3 vecn = {-center.x,-center.y,-center.z};
 
     std::vector<std::vector<float>> newPoints;
     std::vector<std::vector<float>> scale; 
     if (isGeneral)
-        scale = MakeScaleMatrix3D(vec);
+        scale = MakeGeneralScaleMatrix3D(vec2D);
     else 
-        scale = MakeScaleMatrix3D(vec);
+        scale = MakeScaleMatrix3D(vec2D,projection);
     auto moveOP_n = MakeMoveMatrix3D(vecn);
-    auto moveOP_p = MakeMoveMatrix3D(firstPoint);
+    auto moveOP_p = MakeMoveMatrix3D(center);
 
     if (!initial) {
         newPoints = MatrixMultiplyPoints(ConvertPointsToVector3D(points),moveOP_n);
