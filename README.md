@@ -1,4 +1,4 @@
-# Not so cool graphics editor
+# Not so cool graphical editor
 features:
 - lines
 - verteces
