@@ -12,7 +12,9 @@ enum Mode {
     Rotation,
     Scale,
     Mirror,
-    Perspective
+    Perspective,
+    Save,
+    Load
 };
 enum Projection {
     XY,

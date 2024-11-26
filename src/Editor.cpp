@@ -1,5 +1,8 @@
 #include "Editor.hpp"
 
+
+char text[256];
+
  Editor::Editor(int height, int width, int configFlags) {
     mode = Create;
     points = new Point3D[MAX_POINTS_SIZE];
@@ -15,6 +18,11 @@
     isPointInfo = true;
     isLinesInfo = true;
     projection = XY;
+    bufferSize = 256;
+    Text = nullptr;
+    for (int i = 0; i < bufferSize; i++) {
+        text[i] = 0;
+    }
     for (int i = 0; i < MAX_POINTS_SIZE; i++) {
         points[i].deleted = true;
     }
@@ -44,6 +52,130 @@ void Editor::Setup(int configFlags) {
     selector = new Selector();
     transformer = new TransformOperation(windowWidth,windowHeight);
 }
+void Editor::SaveProject(std::string filename) {
+    std::string sub = filename.substr(filename.length()-6,6);
+    std::cout << sub << std::endl;
+    std::ofstream file;
+    file.open("saves/"+filename);
+    if (sub == ".model") {
+        for (int i = 0; i < MAX_POINTS_SIZE; i++) {
+            file << points[i].deleted ? "1" : "0";
+            file << " ";
+            file << points[i].pos.x;
+            file << " ";
+            file << points[i].pos.y;
+            file << " ";
+            file << points[i].pos.z;
+            file << "\n";
+        }
+        for (int i = 0; i < MAX_LINES_SIZE; i++) {
+            file << lines[i].deleted ? "1" : "0";
+            file << " ";
+            int startPoint_i, endPoint_i;
+            if (!lines[i].deleted) {
+                for (int j = 0; j < MAX_POINTS_SIZE; j++) {
+                    if (lines[i].startPoint == &points[j]) {
+                        startPoint_i = j;
+                    }
+                    else if (lines[i].endPoint == &points[j]) {
+                        endPoint_i = j;
+                    }
+                }
+                file << startPoint_i;
+                file << " ";
+                file << endPoint_i;
+                file << " ";
+            }
+            else
+                file << "nn";
+            file << "\n";
+        }
+    }
+    else
+        std::cout << "Error: Bad file extension" << std::endl;
+    file.close();
+}
+void Editor::LoadProject(std::string filename) {
+    std::string sub = filename.substr(filename.length()-6,6);
+    std::cout << sub << std::endl;
+    if (sub != ".model") {
+        std::cout << "Error: Incorrect extension" << std::endl;
+        return;
+    }
+    std::ifstream file;
+    file.open("saves/"+filename);
+    if (!file.is_open()) {
+        std::cout << "Error: There is no file with this name in saves directory" << std::endl;
+        return;
+    }
+    bool state;
+    float pos;
+    int idx;
+    for (int i = 0; i < MAX_POINTS_SIZE; i++) {
+        file >> state;
+        points[i].deleted = state; 
+        file >> pos;
+        points[i].pos.x = pos;
+        file >> pos;
+        points[i].pos.y = pos;
+        file >> pos;
+        points[i].pos.z = pos;
+    }
+    for (int i = 0; i < MAX_LINES_SIZE; i++) {
+        file >> state;
+        lines[i].deleted = state;
+        file >> idx;
+        lines[i].startPoint = &points[idx];
+        file >> idx;
+        lines[i].endPoint = &points[idx];
+    }
+}
+void Editor::OpenSaveWindow() {
+    
+    //for (int i = 0; i < bufferSize; i++)
+    //    text[i] = 0;
+    Rectangle InputBoxRect = {300,300,sidebarwidth,300};
+    int ret = GuiTextInputBox(InputBoxRect,
+                        "Saving data",
+                        "Choose the file name",
+                        "Ok",text,bufferSize,nullptr);
+    //std::cout << "hoho Save " << std::endl;
+    if (ret != -1) {
+        std::cout << ret << std::endl;
+    }
+    if (ret == 1) {
+        //for (int i = 0; i < bufferSize; i++)
+        //    std::cout << text[i] << std::endl;
+        SaveProject((std::string)text);
+        mode = Create;
+    }
+    else if (ret == 0) {
+        mode = Create;
+    }
+}
+void Editor::OpenLoadWindow() {
+    
+    //for (int i = 0; i < bufferSize; i++)
+    //    text[i] = 0;
+    Rectangle InputBoxRect = {300,300,sidebarwidth,300};
+    int ret = GuiTextInputBox(InputBoxRect,
+                        "Loading data",
+                        "Choose the file name",
+                        "Ok",text,bufferSize,nullptr);
+    //std::cout << "hoho Save " << std::endl;
+    if (ret != -1) {
+        std::cout << ret << std::endl;
+    }
+    if (ret == 1) {
+        //for (int i = 0; i < bufferSize; i++)
+        //    std::cout << text[i] << std::endl;
+        LoadProject((std::string)text);
+        mode = Create;
+    }
+    else if (ret == 0) {
+        mode = Create;
+    }
+}
 void Editor::Init(const char* windowName, int targetFPS) {
     InitWindow(windowWidth, windowHeight, windowName);
     SetTargetFPS(targetFPS);
@@ -57,11 +189,16 @@ void Editor::UpdateFrame() {
     UpdateProjection();
     UpdatePoints();
     UpdateLines();
-    UpdateMode();
+    if (mode != Save && mode != Load)
+        UpdateMode();
     ClearBackground(BLACK);
     DrawFPS(10,10);
     UpdateMirror();
     DrawFrame();
+    if (mode == Save)
+        OpenSaveWindow();
+    if (mode == Load)
+        OpenLoadWindow();
     UpdateButtons();
     EndDrawing();
 }
@@ -95,10 +232,17 @@ void Editor::UpdateMode() {
         mode = Perspective;
         isPerspective = isPerspective ? false : true;
     }
+    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) 
+        mode = Save;
+    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_L)) 
+        mode = Load;
 }
-Line3D Editor::CopyLinesProjectedPoints(Line3D* linePoint) {
+Line3D Editor::CopyLinesProjectedPoints(Line3D* linePoint, int pos) {
     Line3D newLine;
-    newLine.deleted = false;
+    if (!linePoint->deleted)
+        newLine.deleted = false;
+    else
+        newLine.deleted = true;
     int startPoint_i = -1;
     int endPoint_i = -1;
     for (int i = 0; i < MAX_POINTS_SIZE; i++) {
@@ -111,12 +255,7 @@ Line3D Editor::CopyLinesProjectedPoints(Line3D* linePoint) {
     }
     newLine.startPoint = &projectedPoints[startPoint_i];
     newLine.endPoint   = &projectedPoints[endPoint_i]; 
-    for (int i = 0; i < MAX_LINES_SIZE; i++) {
-        if (projectedLines[i].deleted) {
-            projectedLines[i] = newLine;
-            break;
-        }
-    }
+    projectedLines[pos] = newLine; 
     return newLine;
 }
 void Editor::UpdateProjection() {
@@ -142,9 +281,11 @@ void Editor::UpdateProjection() {
             toProjected = transformer->ProjectPoints3D(toProjected, zero, {1,1,(float)windowHeight}, false, projection);
         for (int i = 0; i < MAX_POINTS_SIZE; i++) {
             projectedPoints[i] = *toProjected[i];
+            if (points[i].deleted)
+                projectedPoints[i].deleted = true; 
         }
         for (int i = 0; i < MAX_LINES_SIZE; i++) {
-            CopyLinesProjectedPoints(&lines[i]);
+            CopyLinesProjectedPoints(&lines[i], i);
         }
     }
 }
@@ -279,16 +420,28 @@ void Editor::PrintArray() {
 void Editor::UpdatePoints() {
     if (mode == Create) {
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            for (int i = 0; i < MAX_POINTS_SIZE; i++) {
-                if (!CheckCollisionPointCircle(GetMousePosition(), {points[i].pos.x,points[i].pos.x}, 10) && GetMousePosition().x<windowWidth-sidebarwidth)
-                    if (points[i].deleted) {
-                        auto mousePos = GetMousePosition();
-                        points[i].pos = {mousePos.x,mousePos.y,1};
-                        points[i].deleted = false;
-                        break;
-                        
-                    }
-            }
+            if (projection == XY)
+                for (int i = 0; i < MAX_POINTS_SIZE; i++) {
+                    if (!CheckCollisionPointCircle(GetMousePosition(), {points[i].pos.x,points[i].pos.y}, 10) && GetMousePosition().x<windowWidth-sidebarwidth)
+                        if (points[i].deleted) {
+                            auto mousePos = GetMousePosition();
+                            points[i].pos = {mousePos.x,mousePos.y,1};
+                            points[i].deleted = false;
+                            break;
+                            
+                        }
+                }
+            else if (projection == YZ) 
+                for (int i = 0; i < MAX_POINTS_SIZE; i++) {
+                    if (!CheckCollisionPointCircle(GetMousePosition(), {points[i].pos.x,points[i].pos.y}, 10) && GetMousePosition().x<windowWidth-sidebarwidth)
+                        if (points[i].deleted) {
+                            auto mousePos = GetMousePosition();
+                            points[i].pos = {1,mousePos.y,mousePos.x};
+                            points[i].deleted = false;
+                            break;
+                            
+                        }
+                }
         }
     }
     
@@ -586,17 +739,17 @@ void Editor::DrawFrame() {
         painter->DrawLines(lines,MAX_LINES_SIZE,projection);
         painter->DrawPoints(points,MAX_POINTS_SIZE,projection);
         if (isPointInfo)
-            painter->DrawPointsInfo(points,MAX_POINTS_SIZE,projection);
-        if (isLinesInfo)
-            painter->DrawLinesInfo(lines,MAX_LINES_SIZE,projection);
+            painter->DrawPointsInfo(points,points,MAX_POINTS_SIZE,projection);
+        //if (isLinesInfo)
+        //    painter->DrawLinesInfo(lines,lines,MAX_LINES_SIZE,projection);
     }
     else {
         painter->DrawLines(projectedLines,MAX_LINES_SIZE,projection);
         painter->DrawPoints(projectedPoints,MAX_POINTS_SIZE,projection);
         if (isPointInfo)
-            painter->DrawPointsInfo(projectedPoints,MAX_POINTS_SIZE,projection);
-        if (isLinesInfo)
-            painter->DrawLinesInfo(projectedLines,MAX_LINES_SIZE,projection);
+            painter->DrawPointsInfo(projectedPoints,points,MAX_POINTS_SIZE,projection);
+        //if (isLinesInfo)
+        //    painter->DrawLinesInfo(projectedLines,lines,MAX_LINES_SIZE,projection);
     }
     painter->DrawText(mode);
     painter->DrawSideInterface(windowWidth*0.25);

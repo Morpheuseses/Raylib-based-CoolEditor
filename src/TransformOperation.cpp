@@ -6,7 +6,6 @@
 
 // BASE METHODS
 
-
 std::vector<std::vector<float>> TransformOperation::MakeMoveMatrix2D(Vector2 vec) {
     return {
         {1,     0,     0},
@@ -103,9 +102,9 @@ std::vector<std::vector<float>> TransformOperation::MakeProjectionMatrix3D(Vecto
     switch (projection) {
         case YZ:
             return {
-                {0, 0, 0, -1/vec.x},
-                {0, 1, 0, 1},
-                {0, 0, 1, 1},
+                {0, 0, 0, 1/vec.x},
+                {0, 1, 0, 0},
+                {0, 0, 1, 0},
                 {0, 0, 0, 1}
             };
         case XY:
@@ -160,31 +159,27 @@ std::vector<std::vector<float>> TransformOperation::MakeScaleMatrix2D(Vector2 ve
     };
 } 
 std::vector<std::vector<float>> TransformOperation::MakeMirrorMatrix3D(bool isVertical, Projection projection) {
-    if (isVertical) 
+    if (isVertical && projection == XY) 
         return {
             {-1,    0,     0,   0},
             {0,     1,     0,   0},
             {0,     0,     1,   0},
             {0,     0,     0,   1}
         };
-    else {
-        if (projection == YZ)
-            return {
-                {1,     0,     0,  0},
-                {0,     1,     0,  0},
-                {0,     0,    -1,  0},
-                {0,     0,     0,  1}
-            };
-
-        else
-            return {
-                {1,     0,     0,  0},
-                {0,    -1,     0,  0},
-                {0,     0,     1,  0},
-                {0,     0,     0,  1}
-            };
-    }
-        
+    if (isVertical && projection == YZ)
+        return {
+            {1,     0,     0,  0},
+            {0,     1,     0,  0},
+            {0,     0,    -1,  0},
+            {0,     0,     0,  1}
+        };
+    if (!isVertical)
+        return {
+            {1,     0,     0,  0},
+            {0,    -1,     0,  0},
+            {0,     0,     1,  0},
+            {0,     0,     0,  1}
+        };
 }  
 std::vector<std::vector<float>> TransformOperation::ConvertPointsToVector2D(std::vector<Point*> points) {
     auto res = std::vector<std::vector<float>>(points.size(),std::vector<float>(3,0));
@@ -282,6 +277,13 @@ void TransformOperation::MirrorPoints3D(std::vector<Point3D*> points, Vector3 fi
     if (projection == YZ && isVertical) {
         vecn = {0, 0, -secondPoint.z+firstPoint.z};
         vec = {0, 0, secondPoint.z-firstPoint.z};
+        std::cout << "vec" << std::endl;
+        std::cout << vec.x << " " << vec.y << " " << vec.z << std::endl;
+        std::cout << "vec end" << std::endl;
+        std::cout << "vecn" << std::endl;
+        std::cout << vecn.x << " " << vecn.y << " " << vecn.z << std::endl;
+        std::cout << "vecn end" << std::endl;
+
     }
     else if (projection == XY && isVertical) {
         vecn = {-secondPoint.x+firstPoint.x, 0, 0};
@@ -300,7 +302,7 @@ void TransformOperation::MirrorPoints3D(std::vector<Point3D*> points, Vector3 fi
     newPoints = MatrixMultiplyPoints(newPoints,move_p);
     for (int i = 0; i < points.size(); i++) {
         points[i]->pos = {newPoints[i][0], newPoints[i][1], newPoints[i][2]};
-        std::cout << newPoints[i][0] << " "<< newPoints[i][1] << std::endl;
+        std::cout << newPoints[i][0] << " "<< newPoints[i][1] << " " << newPoints[i][2] << std::endl;
     }
 }
 void TransformOperation::MovePoints3D(std::vector<Point3D*> points, Vector2 firstPoint, Vector2 secondPoint, bool initial, Projection projection) {
@@ -417,7 +419,7 @@ std::vector<Point3D*> TransformOperation::ProjectPoints3D(std::vector<Point3D*> 
     for (int i = 0; i < points.size(); i++) {
         res.push_back(new Point3D);
         res[i]->pos = {newPoints[i][0] / newPoints[i][3], newPoints[i][1] / newPoints[i][3],newPoints[i][2] / newPoints[i][3]};
-        std::cout << newPoints[i][0] / newPoints[i][3]<< " "<< newPoints[i][1] / newPoints[i][3]<< " " << newPoints[i][2] / newPoints[i][3]<<  std::endl;
+        //std::cout << newPoints[i][0] / newPoints[i][3]<< " "<< newPoints[i][1] / newPoints[i][3]<< " " << newPoints[i][2] / newPoints[i][3]<<  std::endl;
     }
     return res;
 }

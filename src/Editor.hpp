@@ -11,6 +11,7 @@
 #include "TransformOperation.hpp"
 #include "Painter.hpp"
 #include "Selector.hpp"
+#include <fstream>
 
 class Editor {
     Mode mode;
@@ -38,6 +39,8 @@ class Editor {
     bool isLinesInfo;
     Projection projection;
     bool isPerspective;
+    int bufferSize;
+    char** Text;
 public: 
     Editor(int height, int width, int configFlags);
     ~Editor();
@@ -66,8 +69,10 @@ private:
     std::vector<Point3D*> GetPointAllLines(Point3D*& point);
     Line3D* CreateLine(Point3D* p1, Point3D* p2);
     void CopyPaste();
-    Line3D CopyLinesProjectedPoints(Line3D*);
+    Line3D CopyLinesProjectedPoints(Line3D*,int);
     void PrintArray();
     void SaveProject(std::string);
     void LoadProject(std::string);
+    void OpenSaveWindow();
+    void OpenLoadWindow();
 };
