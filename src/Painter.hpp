@@ -130,24 +130,24 @@ public:
     }
     void DrawLinesInfo(Line3D* lines, Line3D * values, int lines_size, Projection projection) {
         for (int i = 0; i < lines_size; i++) {
-            if (!lines[i].deleted) {
+            if (!values[i].deleted) {
                 int labelpointX, labelpointY;
                 float A, B, C;
                 switch (projection) {
                     case XY:
                         labelpointX = (values[i].endPoint->pos.x + values[i].startPoint->pos.x) / 2;
                         labelpointY = (values[i].endPoint->pos.y + values[i].startPoint->pos.y) / 2;
-                        A = values[i].startPoint->pos.y - values[i].endPoint->pos.y;  
-                        B = values[i].endPoint->pos.x - values[i].startPoint->pos.x;
-                        C = values[i].startPoint->pos.x * values[i].endPoint->pos.y - values[i].endPoint->pos.x * values[i].startPoint->pos.y;
+                        A = lines[i].startPoint->pos.y - lines[i].endPoint->pos.y;  
+                        B = lines[i].endPoint->pos.x - lines[i].startPoint->pos.x;
+                        C = lines[i].startPoint->pos.x * lines[i].endPoint->pos.y - lines[i].endPoint->pos.x * lines[i].startPoint->pos.y;
                         RAYLIB_H::DrawText(TextFormat("(%.0f, %.0f, %.0f)", A, B, C), labelpointX+5, labelpointY+5, 12, GRAY);
                         break;
                     case YZ:
-                        labelpointX = (lines[i].endPoint->pos.z + lines[i].startPoint->pos.z) / 2;
-                        labelpointY = (lines[i].endPoint->pos.y + lines[i].startPoint->pos.y) / 2;
-                        A = values[i].startPoint->pos.y - values[i].endPoint->pos.y;  
-                        B = values[i].endPoint->pos.z - values[i].startPoint->pos.z;
-                        C = values[i].startPoint->pos.z * values[i].endPoint->pos.y - values[i].endPoint->pos.z * values[i].startPoint->pos.y;
+                        labelpointX = (values[i].endPoint->pos.z + values[i].startPoint->pos.z) / 2;
+                        labelpointY = (values[i].endPoint->pos.y + values[i].startPoint->pos.y) / 2;
+                        A = lines[i].startPoint->pos.y - lines[i].endPoint->pos.y;  
+                        B = lines[i].endPoint->pos.z - lines[i].startPoint->pos.z;
+                        C = lines[i].startPoint->pos.z * lines[i].endPoint->pos.y - lines[i].endPoint->pos.z * lines[i].startPoint->pos.y;
                         RAYLIB_H::DrawText(TextFormat("(%.0f, %.0f, %.0f)", A, B, C), labelpointX+5, labelpointY+5, 12, GRAY);
                         break;
                 }
@@ -163,16 +163,16 @@ public:
     void DrawCursorPos() {
         Vector2 pos = GetMousePosition();
         RAYLIB_H::DrawText(TextFormat("X: %.0f, Y: %.0f", pos.x, pos.y), 
-                                windowWidth-windowWidth*0.1, windowHeight-25, 20, WHITE);
+                                windowWidth-windowWidth*0.2, windowHeight-25, 20, WHITE);
     }
     void DrawCursorPosYZ() {
         Vector2 pos = GetMousePosition();
         RAYLIB_H::DrawText(TextFormat("Z: %.0f, Y: %.0f", pos.x, pos.y), 
-                                windowWidth-windowWidth*0.1, windowHeight-25, 20, WHITE);
+                                windowWidth-windowWidth*0.2, windowHeight-25, 20, WHITE);
     }
     void DrawSelectedInfo(float quantity) {
         RAYLIB_H::DrawText(TextFormat("%.0f objects were selected",quantity),
-                                windowWidth-windowWidth*0.3, windowHeight-25,20,WHITE);
+                                windowWidth-windowWidth*0.5, windowHeight-25,20,WHITE);
     }
     void DrawEquation(Line3D* lines, int size) {
         int labelpointX = 5;

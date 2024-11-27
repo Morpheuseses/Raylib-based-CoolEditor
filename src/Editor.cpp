@@ -134,7 +134,7 @@ void Editor::OpenSaveWindow() {
     
     //for (int i = 0; i < bufferSize; i++)
     //    text[i] = 0;
-    Rectangle InputBoxRect = {300,300,sidebarwidth,300};
+    Rectangle InputBoxRect = {100,100,sidebarwidth,300};
     int ret = GuiTextInputBox(InputBoxRect,
                         "Saving data",
                         "Choose the file name",
@@ -157,7 +157,7 @@ void Editor::OpenLoadWindow() {
     
     //for (int i = 0; i < bufferSize; i++)
     //    text[i] = 0;
-    Rectangle InputBoxRect = {300,300,sidebarwidth,300};
+    Rectangle InputBoxRect = {100,100,sidebarwidth,300};
     int ret = GuiTextInputBox(InputBoxRect,
                         "Loading data",
                         "Choose the file name",
@@ -345,6 +345,11 @@ void Editor::UpdateButtons() {
     Rectangle ProjectionToggleRect = {windowWidth-sidebarwidth+5,buttonSize*11+5*12,sidebarwidth,buttonSize};
     if (GuiButton(ProjectionToggleRect, "Projection")) {
         ProjectionToggle(); 
+    }
+    Rectangle PerspectiveRect = {windowWidth-sidebarwidth+5,buttonSize*12+5*13,sidebarwidth,buttonSize};
+    if (GuiButton(PerspectiveRect, "Pespective")) {
+        mode = Perspective;
+        isPerspective = isPerspective ? false : true;
     }
 }
 void Editor::UpdateMirror() {
@@ -740,16 +745,17 @@ void Editor::DrawFrame() {
         painter->DrawPoints(points,MAX_POINTS_SIZE,projection);
         if (isPointInfo)
             painter->DrawPointsInfo(points,points,MAX_POINTS_SIZE,projection);
-        //if (isLinesInfo)
-        //    painter->DrawLinesInfo(lines,lines,MAX_LINES_SIZE,projection);
+        if (isLinesInfo)
+            painter->DrawLinesInfo(lines,lines,MAX_LINES_SIZE,projection);
     }
     else {
         painter->DrawLines(projectedLines,MAX_LINES_SIZE,projection);
         painter->DrawPoints(projectedPoints,MAX_POINTS_SIZE,projection);
         if (isPointInfo)
             painter->DrawPointsInfo(projectedPoints,points,MAX_POINTS_SIZE,projection);
-        //if (isLinesInfo)
-        //    painter->DrawLinesInfo(projectedLines,lines,MAX_LINES_SIZE,projection);
+        if (isLinesInfo)
+            painter->DrawLinesInfo(lines,projectedLines,MAX_LINES_SIZE,projection);
+
     }
     painter->DrawText(mode);
     painter->DrawSideInterface(windowWidth*0.25);
